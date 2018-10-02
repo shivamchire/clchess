@@ -27,6 +27,7 @@ void print_board() {
 					break;
 				// vertical partioning and pieces in that box
 				case 2:
+					// print rank of row
 					if(j == 0) {
 						printf(" %d ", rank);
 						rank++;

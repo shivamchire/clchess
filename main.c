@@ -22,13 +22,15 @@ void twoplayer() {
 		//TODO add option of inputing move according to PGN
 		// update board according to next move
 		str_move = conv_str_move(move);
-		if(str_move.src != -1) {
-			update_board(str_move);
-		}
-		else {
+		if(str_move.src == -1) {
 			printf("Invalid move\n");
 			continue;
 		}
+		if(inbtw(str_move)) {
+			printf("Invalid move\n");
+			continue;
+		}
+		update_board(str_move);
 		print_board();
 
 		// change player

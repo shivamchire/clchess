@@ -1,15 +1,18 @@
 #include "includes.h"
+#include "ui.h"
 #define MOVE_LEN 8
 
 char move[MOVE_LEN], player = 'w';
 void twoplayer(void);
 int main() {
-	print_board();
 	// TODO main menu
 	twoplayer();
 }
 void twoplayer() {
 
+	print4("In twoplayer\n");
+	init_board();
+	print_board();
 	move_t str_move;
 	while(1) {
 		// take next move

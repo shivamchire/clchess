@@ -3,6 +3,7 @@
 void print_board() {
 
 	int i = 0, j = 0, k = 0, l = 0, rank = 1;
+	char p;
 	printf("     a   b   c   d   e   f   g   h\n");
 	// since in each iteration we are going to print horizontal partioning
 	// line (--- --- ---) and a box(made of 3 line) we will print 4 lines
@@ -11,6 +12,12 @@ void print_board() {
 		j = 0;
 		// to print 8 columns
 		while(j < 8) {
+			if(board[l][k % 8]) {
+				p = board[l][k % 8]->piece;
+			}
+			else {
+				p = ' ';
+			}
 			// depending on which line print
 			switch(i % 4) {
 				// horizontal partioning
@@ -32,7 +39,7 @@ void print_board() {
 						printf(" %d ", rank);
 						rank++;
 					}
-					printf("| %c ", board[l][k % 8]);
+					printf("| %c ", p);
 					k++;
 					break;
 			}

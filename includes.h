@@ -3,6 +3,6 @@
 
 #include <stdbool.h>
 #include "board_pieces.h"
-#include "ui.h"
+#include "debug.h"
 
 #endif

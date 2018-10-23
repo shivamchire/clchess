@@ -1,4 +1,5 @@
 #include "includes.h"
+#include "board_pieces.h"
 #include "ui.h"
 #define MOVE_LEN 8
 

@@ -16,13 +16,6 @@ typedef struct pos {
 	unsigned y;
 }pos_t;
 
-typedef struct move {
-	int src;
-	int src_rank;
-	int dest;
-	int dest_rank;
-} move_t;
-
 
 typedef struct pawn {
 	bool enpassant;
@@ -63,10 +56,17 @@ typedef struct piece {
 	piece_list_t protected_by, protecting, attack_by, attacking;
 }piece_t;
 
+typedef struct move {
+	int src;
+	int src_rank;
+	int dest;
+	int dest_rank;
+}move_t;
 
 extern piece_t *(board[8][8]);
 void init_board();
 void update_board(move_t move);
+
 move_t conv_str_move(char *move);
 /*
  * check if there is pieces in between the two tiles between which movement of
@@ -77,5 +77,4 @@ move_t conv_str_move(char *move);
  * 	-1- invalid move
  */
 int inbtw(move_t move);
-
 #endif

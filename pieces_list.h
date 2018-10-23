@@ -2,6 +2,7 @@
 #define PIECE_LIST_H
 #include "includes.h"
 #include "list/g_slnl.h"
+#include "board_pieces.h"
 
 typedef list_t piece_list_t;
 

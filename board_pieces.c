@@ -107,6 +107,14 @@ void init_board() {
 	}
 }
 
+
+/*
+ * update board according to move
+ */
+void update_board(move_t move) {
+	board[move.dest_rank][move.dest] = board[move.src_rank][move.src];
+	board[move.src_rank][move.src] = NULL;
+}
 /*
  * convert to structred move
  * only accept moves in following format
@@ -132,15 +140,9 @@ move_t conv_str_move(char *move) {
 	else {
 		str_move.src = -1;
 	}
+	vprint1("src (%c, %d) dest (%c, %d)\n", str_move.src + 'a', str_move.src_rank,
+		       				str_move.dest + 'a', str_move.dest_rank);
 	return str_move;
-}
-
-/*
- * update board according to move
- */
-void update_board(move_t move) {
-	board[move.dest_rank][move.dest]->piece = board[move.src_rank][move.src]->piece;
-	board[move.src_rank][move.src]->piece = ' ';
 }
 /*
  * check if there is pieces in between the two tiles between which movement of
@@ -163,7 +165,7 @@ int inbtw(move_t move) {
 	//horizontal movement
 	else if(min_rank == max_rank) {
 		for(i = min_col + 1; i < max_col; i++) {
-			if(board[min_rank][i]->piece != ' ') {
+			if(board[min_rank][i] != NULL) {
 				return 1;
 			}
 		}
@@ -171,7 +173,7 @@ int inbtw(move_t move) {
 	//vertical movement
 	else if(min_col == max_col) {
 		for(i = min_rank + 1; i < max_rank; i++) {
-			if(board[i][min_col]->piece != ' ') {
+			if(board[i][min_col] != NULL) {
 				return 1;
 			}
 		}
@@ -180,7 +182,7 @@ int inbtw(move_t move) {
 	else if(max_col - min_col == max_rank - min_rank) {
 		for(i = min_rank + 1, j = min_col + 1; i < max_rank &&
 				j < max_col; i++, j++) {
-			if(board[i][j]->piece != ' ') {
+			if(board[i][j] != NULL) {
 				return 1;
 			}
 		}

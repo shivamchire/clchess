@@ -12,12 +12,6 @@ void print_board() {
 		j = 0;
 		// to print 8 columns
 		while(j < 8) {
-			if(board[l][k % 8]) {
-				p = board[l][k % 8]->piece;
-			}
-			else {
-				p = ' ';
-			}
 			// depending on which line print
 			switch(i % 4) {
 				// horizontal partioning
@@ -34,6 +28,12 @@ void print_board() {
 					break;
 				// vertical partioning and pieces in that box
 				case 2:
+					if(board[l][k % 8]) {
+						p = board[l][k % 8]->piece;
+					}
+					else {
+						p = ' ';
+					}
 					// print rank of row
 					if(j == 0) {
 						printf(" %d ", rank);

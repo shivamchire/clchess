@@ -14,6 +14,7 @@ typedef struct node {
 typedef struct list {
 	node_t *h, *t;
 	size_t size;
+	size_t num;
 }list_t;
 
 void init(list_t *l, size_t size);
@@ -21,7 +22,7 @@ void init(list_t *l, size_t size);
 int insert(list_t *l, void *data, size_t pos);
 void *see(list_t *l, size_t pos);
 void *remov(list_t *l, size_t pos);
-void sort(list_t *l, int compar(const void **, const void **));
-void reverse(list_t *l);
+//void sort(list_t *l, int compar(const void **, const void **));
+//void reverse(list_t *l);
 void destroy(list_t *l);
 #endif //#ifndef G_SLNL_H

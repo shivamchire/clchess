@@ -3,6 +3,7 @@
 void init(list_t *l, size_t size) {
 	l->h = l->t = NULL;
 	l->size = size;
+	l->num = 0;
 }
 /*
 void printl(list_t *l) {
@@ -36,6 +37,7 @@ int insert(list_t *l, void *data_ar, size_t pos) {
 	 */
 	if(i == pos) {
 		node_t *tmp = (node_t *)malloc(sizeof(node_t));
+		l->num++;
 		void *data = malloc(len);
 		tmp->data = data;
 		memcpy(data, data_ar, len);
@@ -116,6 +118,7 @@ void *remov(list_t *l, size_t pos) {
 		 * if node which is need to be remove exist
 		 */
 		if(i == pos) {
+			l->num--;
 			/*
 			 * list has only one element
 			 */
@@ -153,6 +156,7 @@ void *remov(list_t *l, size_t pos) {
 	}
 	return c;
 }
+/*
 void sort(list_t *l, int compar(const void **a, const void **b)) {
 
 	size_t i = 0;
@@ -209,6 +213,7 @@ void reverse(list_t *l) {
 	}
 	free(arr);
 }
+*/
 void destroy(list_t *l) {
 	node_t *ptr = l->h, *tmp;
 

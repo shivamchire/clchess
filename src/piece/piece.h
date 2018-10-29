@@ -1,5 +1,6 @@
-#ifndef BOARD_PIECES_H
-#define BOARD_PIECES_H
+#ifndef PIECES_H
+#define PIECES_H
+
 
 #include "includes.h"
 #include "list/g_slnl.h"
@@ -8,14 +9,10 @@
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 
-//stores pos of board
-//x = cols
-//y = ranks
-typedef struct pos {
-	unsigned x;
-	unsigned y;
-}pos_t;
-
+#define WHITE 1
+#define BLACK 0
+#define COLOR_Mask 1
+#define COLOR(x) ((x) & COLOR_Mask)
 
 typedef struct pawn {
 	bool enpassant;
@@ -56,25 +53,6 @@ typedef struct piece {
 	piece_list_t protected_by, protecting, attack_by, attacking;
 }piece_t;
 
-typedef struct move {
-	int src;
-	int src_rank;
-	int dest;
-	int dest_rank;
-}move_t;
-
 extern piece_t *(board[8][8]);
-void init_board();
-void update_board(move_t move);
 
-move_t conv_str_move(char *move);
-/*
- * check if there is pieces in between the two tiles between which movement of
- * some other piece is going to take place
- * retval
- * 	1 - yes there is piece in btw
- * 	0 - no
- * 	-1- invalid move
- */
-int inbtw(move_t move);
 #endif

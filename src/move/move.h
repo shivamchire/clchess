@@ -1,20 +1,13 @@
 #ifndef MOVE_H
 #define MOVE_H
 
-//stores pos of board
-//x = cols
-//y = ranks
-typedef struct pos {
-	unsigned x;
-	unsigned y;
-}pos_t;
-
+#include "../includes.h"
 
 typedef struct move {
-	int src;
-	int src_rank;
-	int dest;
-	int dest_rank;
+	int x1;
+	int y1;
+	int x2;
+	int y2;
 }move_t;
 
 /*
@@ -25,6 +18,16 @@ typedef struct move {
  * 	0 - no
  * 	-1- invalid move
  */
-int inbtw(move_t move);
+int inbtw(board_t board, move_t move);
+move_t conv_str_move(char *move);
+bool vertical(move_t move);
+bool horizontal(move_t move);
+bool diagonal(move_t move);
+bool nightmove(move_t move);
+bool invalid(move_t move);
+extern bool (* move_mat[8][8])(move_t);
+int islegal(board_t board, move_t move);
+
+
 
 #endif

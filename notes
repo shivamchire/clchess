@@ -89,3 +89,29 @@ logic for one player
 				stores expected moves in list
 	2)kill opp pieces
 	3)get max scores on the basis of various pieces position
+Moves
+	T - horse moves(two and half)
+	V - vertical
+	H - horizontal
+	D - Diagonal
+	C - color
+	Flags
+	if pawn
+	T - pawns two moves
+	E - Enpassant
+	if king
+	L - Last man standing
+	C - check
+	if other
+	P - pin
+
+	        NSEW -ve  +ve  -ve  +ve  NW   SE   NE   NW
+	TE XLPC TTTT VVVV VVVV HHHH HHHH DDDD DDDD DDDD DDDD xxxK/Q VHDC
+
+	R - 110
+	N - 000
+	B - 001
+	Q - 0 111
+	K - 1 111
+	P - 101
+	Remaning 010, 011, 100

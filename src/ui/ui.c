@@ -1,6 +1,7 @@
+#include <stdio.h>
 #include "ui.h"
 
-void print_board() {
+void print_board(board_t board) {
 
 	int i = 0, j = 0, k = 0, l = 0, rank = 1;
 	char p;
@@ -36,7 +37,7 @@ void print_board() {
 					}
 					// print rank of row
 					if(j == 0) {
-						printf(" %d ", rank);
+						printf(" %d ", 9 - rank);
 						rank++;
 					}
 					printf("| %c ", p);

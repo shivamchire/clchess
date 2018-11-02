@@ -1,5 +1,5 @@
-#include "board_pieces.h"
 #include <string.h>
+#include "board.h"
 
 
 /*
@@ -12,23 +12,22 @@
  * K, k = King
  * P, p = pawn
  */
-piece_t *(board[8][8]);
 char char_board[8][8] = {
-	{'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'},
-	{'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'},
-	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+	{'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'},
 	{'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
-	{'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'}
+	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+	{'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'},
+	{'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'}
 };
-void init_board() {
+void init_board(board_t board) {
 
-	print4("Initializing board\n");
+	print4("Initializing board");
 	pos_t pos;
 	int i, j;
-	print3("Making structure for all pieces\n");
+	print3("Making structure for all pieces");
 	for(i = 0; i < 8; i++) {
 		for(j = 0; j < 8; j++) {
 			if(char_board[i][j] != ' ') {
@@ -48,7 +47,14 @@ void init_board() {
 /*
  * update board according to move
  */
-void update_board(move_t move) {
-	board[move.dest_rank][move.dest] = board[move.src_rank][move.src];
-	board[move.src_rank][move.src] = NULL;
+void update_board(board_t board, move_t move) {
+	print2("Updating board");
+	piece_t *src_piece = board[move.y1][move.x1];
+	pos_t pos;
+	pos.x = move.x2;
+	pos.y = move.y2;
+	src_piece->pos = pos;
+	//TODO destroy dest_piece
+	board[move.y2][move.x2] = board[move.y1][move.x1];
+	board[move.y1][move.x1] = NULL;
 }

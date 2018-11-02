@@ -1,3 +1,16 @@
 DEBUG_FLAG = 1
-main: board_pieces.c main.c debug.h includes.h list/g_slnl.c pieces_list.c ui.c
-	gcc -DDEBUG=$(DEBUG_FLAG) -std=c99 board_pieces.c list/g_slnl.c pieces_list.c ui.c main.c -o main
+
+main: src/main.c board.o move.o piece.o g_slnl.o ui.o chess.o
+	gcc -DDEBUG=$(DEBUG_FLAG) src/main.c build/board.o build/move.o build/piece.o build/g_slnl.o build/ui.o build/chess.o -o main
+board.o: src/board/board.h src/board/board.c
+	gcc -DDEBUG=$(DEBUG_FLAG) -c src/board/board.c -o build/board.o
+move.o: src/move/move.h src/move/move.c
+	gcc -DDEBUG=$(DEBUG_FLAG) -c src/move/move.c -o build/move.o
+piece.o: src/piece/piece.h src/piece/piece.c
+	gcc -DDEBUG=$(DEBUG_FLAG) -c src/piece/piece.c  -o build/piece.o
+g_slnl.o: src/piece/list/g_slnl.c src/piece/list/g_slnl.h
+	gcc -DDEBUG=$(DEBUG_FLAG) -c src/piece//list/g_slnl.c -o build/g_slnl.o
+ui.o: src/ui/ui.h src/ui/ui.c
+	gcc -DDEBUG=$(DEBUG_FLAG) -c src/ui/ui.c -o build/ui.o
+chess.o: src/includes.h src/move/move.h src/move/move.c
+	gcc -DDEBUG=$(DEBUG_FLAG) -c src/chess/chess.c -o build/chess.o

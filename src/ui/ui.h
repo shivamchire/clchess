@@ -1,9 +1,7 @@
 #ifndef UI_H
 #define UI_H
 
-#include <stdio.h>
-#include "includes.h"
-#include "board_pieces.h"
+#include "../includes.h"
 
-void print_board();
+void print_board(board_t board);
 #endif

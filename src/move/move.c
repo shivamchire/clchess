@@ -1,4 +1,16 @@
-
+#include "move.h"
+#include "../piece/piece.h"
+#include "../error/err.h"
+bool (*move_mat[8][8])(move_t) = {
+	{invalid, horizontal, horizontal, horizontal, horizontal, horizontal, horizontal, horizontal },
+	{vertical, diagonal, nightmove, invalid, invalid, invalid, invalid, invalid },
+	{vertical, nightmove, diagonal, invalid, invalid, invalid, invalid, invalid },
+	{vertical, invalid, invalid, diagonal, invalid, invalid, invalid, invalid },
+	{vertical, invalid, invalid, invalid, diagonal, invalid, invalid, invalid },
+	{vertical, invalid, invalid, invalid, invalid, diagonal, invalid, invalid },
+	{vertical, invalid, invalid, invalid, invalid, invalid, diagonal, invalid },
+	{vertical, invalid, invalid, invalid, invalid, invalid, invalid, diagonal }
+};
 /*
  * convert to structred move
  * only accept moves in following format
@@ -7,7 +19,7 @@
  * 	address	 address
  * no caps allowed
  * return structure_move
- * and set str_move.src to -1 if invalid move(out of board bound move)
+ * and set str_move.x1 to -1 if invalid move(out of board bound move)
  */
 move_t conv_str_move(char *move) {
 
@@ -16,18 +28,20 @@ move_t conv_str_move(char *move) {
 	   move[1] >= '1' && move[1] <= '8' &&
 	   move[2] >= 'a' && move[2] <= 'h' &&
 	   move[3] >= '1' && move[3] <= '8') {
-		str_move.src = move[0] - 'a';
-		str_move.src_rank = move[1] - '0' - 1;
-		str_move.dest = move[2] - 'a';
-		str_move.dest_rank = move[3] - '0' - 1;
+		str_move.x1 = move[0] - 'a';
+		str_move.y1 = 7 - (move[1] - '0' - 1);// 7- since board in array
+						    // is opposite of what gets printed
+		str_move.x2 = move[2] - 'a';
+		str_move.y2 = 7 - (move[3] - '0' - 1);
 	}
 	else {
-		str_move.src = -1;
+		str_move.x1 = -1;
 	}
-	vprint1("src (%c, %d) dest (%c, %d)\n", str_move.src + 'a', str_move.src_rank,
-		       				str_move.dest + 'a', str_move.dest_rank);
+	vprint1("src (%c, %d) dest (%c, %d)", str_move.x1 + 'a', str_move.y1,
+		       				str_move.x2 + 'a', str_move.y2);
 	return str_move;
 }
+
 /*
  * check if there is pieces in between the two tiles between which movement of
  * some other piece is going to take place
@@ -36,12 +50,12 @@ move_t conv_str_move(char *move) {
  * 	0 - no
  * 	-1- invalid move
  */
-int inbtw(move_t move) {
+int inbtw(board_t board, move_t move) {
 	int i, j;
-	int min_rank = MIN(move.src_rank, move.dest_rank),
-	    max_rank = MAX(move.src_rank, move.dest_rank),
-	    min_col = MIN(move.src, move.dest),
-	    max_col = MAX(move.src, move.dest);
+	int min_rank = MIN(move.y1, move.y2),
+	    max_rank = MAX(move.y1, move.y2),
+	    min_col = MIN(move.x1, move.x2),
+	    max_col = MAX(move.x1, move.x2);
 	//no movement
 	if(min_col == max_col && min_rank == max_rank) {
 		return -1;
@@ -85,13 +99,60 @@ int inbtw(move_t move) {
 	return 0;
 }
 
-bool islegal(move_t move) {
-	piece_t *src_piece = board[move.src_rank][move.src];
-	piece_t *dest_piece = board[move.dest_rank][move.dest];
-	//check if capture of same side
-	if(COLOR(src_piece) && COLOR(dest_piece)) {
-		print2("Piece being capture is of same side");
-		return -1;
+int islegal(board_t board, move_t move) {
+	piece_t *src_piece = board[move.y1][move.x1];
+	piece_t *dest_piece = board[move.y2][move.x2];
+	bool (* ptr)(move_t) = move_mat[ABS(move.y1 - move.y2)]
+					[ABS(move.x1 - move.x2)];
+	if(!src_piece) {
+		print2("No piece at starting tile");
+		return ENOPIECE;
 	}
+	else if(GetPin(src_piece->bitpiece)) {
+		print2("Piece Pin");
+		return EPIN;
+	}
+	//check if capture of same side
+	if(dest_piece && (~(COLOR(src_piece->bitpiece) ^ COLOR(dest_piece->bitpiece)))) {
+		print2("You cant capture your own piece");
+		return EOWNCAP;
+	}
+	return ptr(move);
+}
 
-
+bool vertical(move_t move) {
+	print1("In Vertical");
+	if(x > 0) {
+		return GetVPveField(piece->bitpiece) >= x;
+	}
+	else {
+		return GetVNveField(piece->bitpiece) >= -x;
+	}
+}
+bool horizontal(move_t move) {
+	print1("In horizontal");
+	if(x > 0) {
+		return GetHPveField(piece->bitpiece) >= x;
+	}
+	else {
+		return GetHNveField(piece->bitpiece) >= -x;
+	}
+}
+bool diagonal(move_t move) {
+	print1("In diagonal");
+	if(x > 0) {
+		return GetVPveField(piece->bitpiece) >= x;
+	}
+	else {
+		return GetVNveField(piece->bitpiece) >= -x;
+	}
+	return 0;
+}
+bool invalid(move_t move) {
+	print1("in invalid");
+	return 1;
+}
+bool nightmove(move_t move) {
+	print1("in nightmove");
+	return 0;
+}

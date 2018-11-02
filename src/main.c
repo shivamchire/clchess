@@ -1,9 +1,11 @@
 #include "includes.h"
-#include "board_pieces.h"
-#include "ui.h"
+#include "board/board.h"
+#include "ui/ui.h"
+#include "chess/chess.h"
+#include "piece/piece.h"
 #define MOVE_LEN 8
 
-char move[MOVE_LEN], player = 'w';
+char move[MOVE_LEN];
 void twoplayer(void);
 int main() {
 	// TODO main menu
@@ -12,12 +14,18 @@ int main() {
 void twoplayer() {
 
 	print4("In twoplayer\n");
-	init_board();
-	print_board();
+	chess_t chess;
+	init_chess(&chess);
+	print_board(chess.board);
 	move_t str_move;
 	while(1) {
 		// take next move
-		printf("%c->", player);
+		if(chess.player == WHITE) {
+			printf("%c->", 'w');
+		}
+		else {
+			printf("%c->", 'b');
+		}
 		if(scanf("%s", move) == -1) {
 			printf("\n");
 			break;
@@ -26,23 +34,18 @@ void twoplayer() {
 		//TODO add option of inputing move according to PGN
 		// update board according to next move
 		str_move = conv_str_move(move);
-		if(str_move.src == -1) {
+		if(str_move.x1 == -1) {
 			printf("Invalid move\n");
 			continue;
 		}
-		if(inbtw(str_move)) {
+		if(inbtw(chess.board, str_move) || islegal(chess.board, str_move)) {
 			printf("Invalid move\n");
 			continue;
 		}
-		update_board(str_move);
-		print_board();
+		update_board(chess.board, str_move);
+		print_board(chess.board);
 
 		// change player
-		if(player == 'w') {
-			player = 'b';
-		}
-		else {
-			player = 'w';
-		}
+		chess.player ^= COLOR_Msk;
 	}
 }

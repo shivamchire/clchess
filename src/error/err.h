@@ -6,5 +6,6 @@
 #define ENOPIECE 2
 #define EPIN 3
 #define EOWNCAP 4
+#define EWCOL 5
 
 #endif

@@ -8,6 +8,9 @@
  * 	debug print level n with only func, line and file
  * This printf style debuging prints all printn when DEBUG is >= n
  */
+#ifndef DEBUG
+#define DEBUG 0
+#endif
 #define vprint1(fmt, ...) \
 		do { \
 			if (DEBUG != 0 && DEBUG <= 1) \

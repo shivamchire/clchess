@@ -9,4 +9,8 @@ void init_chess(chess_t *chess) {
 		chess->board[i] = (piece_t **)malloc(sizeof(piece_t *) * 8);
 	}
 	init_board(chess->board);
+	chess->move.x1 = 0;
+	chess->move.x2 = 0;
+	chess->move.y1 = 0;
+	chess->move.y2 = 0;
 }

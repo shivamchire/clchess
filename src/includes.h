@@ -28,4 +28,17 @@ typedef struct piece {
 
 typedef piece_t *** board_t;
 
+typedef struct move {
+	int x1;
+	int y1;
+	int x2;
+	int y2;
+}move_t;
+
+typedef struct chess {
+	uint8_t player;
+	board_t board;
+	move_t move;
+}chess_t;
+
 #endif

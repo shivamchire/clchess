@@ -1,16 +1,24 @@
 #include "move.h"
 #include "../piece/piece.h"
 #include "../error/err.h"
-bool (*move_mat[8][8])(move_t) = {
-	{invalid, horizontal, horizontal, horizontal, horizontal, horizontal, horizontal, horizontal },
-	{vertical, diagonal, nightmove, invalid, invalid, invalid, invalid, invalid },
-	{vertical, nightmove, diagonal, invalid, invalid, invalid, invalid, invalid },
-	{vertical, invalid, invalid, diagonal, invalid, invalid, invalid, invalid },
-	{vertical, invalid, invalid, invalid, diagonal, invalid, invalid, invalid },
-	{vertical, invalid, invalid, invalid, invalid, diagonal, invalid, invalid },
-	{vertical, invalid, invalid, invalid, invalid, invalid, diagonal, invalid },
-	{vertical, invalid, invalid, invalid, invalid, invalid, invalid, diagonal }
+bool (*move_mat[15][15])(piece_t *piece, int x, int y) = {
+	{ nwdiag, invalid, invalid, invalid, invalid, invalid, invalid, pvevertical, invalid, invalid, invalid, invalid, invalid, invalid, nediag },
+	{ invalid, nwdiag, invalid, invalid, invalid, invalid, invalid, pvevertical, invalid, invalid, invalid, invalid, invalid, nediag, invalid },
+	{ invalid, invalid, nwdiag, invalid, invalid, invalid, invalid, pvevertical, invalid, invalid, invalid, invalid, nediag, invalid, invalid },
+	{ invalid, invalid, invalid, nwdiag, invalid, invalid, invalid, pvevertical, invalid, invalid, invalid, nediag, invalid, invalid, invalid },
+	{ invalid, invalid, invalid, invalid, nwdiag, invalid, invalid, pvevertical, invalid, invalid, nediag, invalid, invalid, invalid, invalid },
+	{ invalid, invalid, invalid, invalid, invalid, nwdiag, nightnwmove, pvevertical, nightnemove, nediag, invalid, invalid, invalid, invalid, invalid },
+	{ invalid, invalid, invalid, invalid, invalid, nightwnmove, nwdiag, pvevertical, nediag, nightenmove, invalid, invalid, invalid, invalid, invalid },
+	{ nvehorizontal, nvehorizontal, nvehorizontal, nvehorizontal, nvehorizontal, nvehorizontal, nvehorizontal, invalid, pvehorizontal, pvehorizontal, pvehorizontal, pvehorizontal, pvehorizontal, pvehorizontal, pvehorizontal},
+	{ invalid, invalid, invalid, invalid, invalid, nightwsmove, swdiag, nvevertical, sediag, nightesmove, invalid, invalid, invalid, invalid, invalid },
+	{ invalid, invalid, invalid, invalid, invalid, swdiag, nightswmove, nvevertical, nightsemove, sediag, invalid, invalid, invalid, invalid, invalid },
+	{ invalid, invalid, invalid, invalid, swdiag, invalid, invalid, nvevertical, invalid, invalid, sediag, invalid, invalid, invalid, invalid },
+	{ invalid, invalid, invalid, swdiag, invalid, invalid, invalid, nvevertical, invalid, invalid, invalid, sediag, invalid, invalid, invalid },
+	{ invalid, invalid, swdiag, invalid, invalid, invalid, invalid, nvevertical, invalid, invalid, invalid, invalid, sediag, invalid, invalid },
+	{ invalid, swdiag, invalid, invalid, invalid, invalid, invalid, nvevertical, invalid, invalid, invalid, invalid, invalid, sediag, invalid },
+	{ swdiag, invalid, invalid, invalid, invalid, invalid, invalid, nvevertical, invalid, invalid, invalid, invalid, invalid, invalid, sediag }
 };
+bool (**move_mat_mid)(piece_t*, int, int) = &(move_mat[7][7]);
 /*
  * convert to structred move
  * only accept moves in following format
@@ -56,6 +64,8 @@ int inbtw(board_t board, move_t move) {
 	    max_rank = MAX(move.y1, move.y2),
 	    min_col = MIN(move.x1, move.x2),
 	    max_col = MAX(move.x1, move.x2);
+	int x = move.x2 - move.x1;
+	int y = move.y2 - move.y1;
 	//no movement
 	if(min_col == max_col && min_rank == max_rank) {
 		return -1;
@@ -99,60 +109,100 @@ int inbtw(board_t board, move_t move) {
 	return 0;
 }
 
-int islegal(board_t board, move_t move) {
+int islegal(chess_t *chess) {
+	board_t board = chess->board;
+	move_t move = chess->move;
 	piece_t *src_piece = board[move.y1][move.x1];
 	piece_t *dest_piece = board[move.y2][move.x2];
-	bool (* ptr)(move_t) = move_mat[ABS(move.y1 - move.y2)]
-					[ABS(move.x1 - move.x2)];
+	int x = move.x1 - move.x2;
+	int y = move.y1 - move.y2;
+	bool (*ptr)(piece_t*, int, int) = move_mat[7 - (move.y1 - move.y2)]
+					[7 - (move.x1 - move.x2)];
 	if(!src_piece) {
-		print2("No piece at starting tile");
+		print3("No piece at starting tile");
 		return ENOPIECE;
 	}
 	else if(GetPin(src_piece->bitpiece)) {
-		print2("Piece Pin");
+		print3("Piece Pin\n");
 		return EPIN;
+	}
+	else if(COLOR(src_piece->bitpiece) ^ chess->player) {
+		print3("Play with your own piece");
+		return EWCOL;
 	}
 	//check if capture of same side
 	if(dest_piece && (~(COLOR(src_piece->bitpiece) ^ COLOR(dest_piece->bitpiece)))) {
-		print2("You cant capture your own piece");
+		print3("You cant capture your own piece");
 		return EOWNCAP;
 	}
-	return ptr(move);
+	return ptr(src_piece, x, y);
 }
 
-bool vertical(move_t move) {
-	print1("In Vertical");
-	if(x > 0) {
-		return GetVPveField(piece->bitpiece) >= x;
-	}
-	else {
-		return GetVNveField(piece->bitpiece) >= -x;
-	}
+bool pvevertical(piece_t *piece, int x, int y) {
+	vprint1("%lx %ld", GetVPveField(piece->bitpiece), (uint64_t)y);
+	return !(GetVPveField(piece->bitpiece) >= (uint64_t)y);
 }
-bool horizontal(move_t move) {
-	print1("In horizontal");
-	if(x > 0) {
-		return GetHPveField(piece->bitpiece) >= x;
-	}
-	else {
-		return GetHNveField(piece->bitpiece) >= -x;
-	}
+bool nvevertical(piece_t *piece, int x, int y) {
+	print1();
+	return !(GetVNveField(piece->bitpiece) >= (uint64_t)-y);
 }
-bool diagonal(move_t move) {
-	print1("In diagonal");
-	if(x > 0) {
-		return GetVPveField(piece->bitpiece) >= x;
-	}
-	else {
-		return GetVNveField(piece->bitpiece) >= -x;
-	}
-	return 0;
+bool pvehorizontal(piece_t *piece, int x, int y) {
+	print1();
+	return !(GetHPveField(piece->bitpiece) >= (uint64_t)x);
 }
-bool invalid(move_t move) {
+bool nvehorizontal(piece_t *piece, int x, int y) {
+	print1();
+	return !(GetHNveField(piece->bitpiece) >= (uint64_t)-x);
+}
+bool nwdiag(piece_t *piece, int x, int y) {
+	print1();
+	return !(GetDNWField(piece->bitpiece) >= (uint64_t)y);
+}
+bool nediag(piece_t *piece, int x, int y) {
+	print1();
+	return !(GetDNEField(piece->bitpiece) >= (uint64_t)y);
+}
+bool swdiag(piece_t *piece, int x, int y) {
+	print1();
+	return !(GetDSWField(piece->bitpiece) >= (uint64_t)-y);
+}
+bool sediag(piece_t *piece, int x, int y) {
+	print1();
+	return !(GetDSEField(piece->bitpiece) >= (uint64_t)x);
+}
+bool nightnwmove(piece_t *piece, int x, int y) {
+	return GetNightNW(piece->bitpiece) ^ (NightNWMsk >> NightNWPos);
+}
+bool nightnemove(piece_t *piece, int x, int y) {
+	print1();
+	return GetNightNE(piece->bitpiece) ^ (NightNEMsk >> NightNEPos);
+}
+bool nightswmove(piece_t *piece, int x, int y) {
+	print1();
+	return GetNightSW(piece->bitpiece) ^ (NightSWMsk >> NightSWPos);
+}
+bool nightsemove(piece_t *piece, int x, int y) {
+	print1();
+	return GetNightSE(piece->bitpiece) ^ (NightSEMsk >> NightSEPos);
+}
+bool nightwnmove(piece_t *piece, int x, int y) {
+	print1();
+	return GetNightWN(piece->bitpiece) ^ (NightWNMsk >> NightWNPos);
+}
+bool nightenmove(piece_t *piece, int x, int y) {
+	print1();
+	return GetNightEN(piece->bitpiece) ^ (NightENMsk >> NightENPos);
+}
+bool nightwsmove(piece_t *piece, int x, int y) {
+	print1();
+	return GetNightWS(piece->bitpiece) ^ (NightWSMsk >> NightWSPos);
+}
+bool nightesmove(piece_t *piece, int x, int y) {
+	print1();
+	return GetNightES(piece->bitpiece) ^ (NightESMsk >> NightESPos);
+}
+
+bool invalid(piece_t *piece, int x, int y) {
 	print1("in invalid");
 	return 1;
-}
-bool nightmove(move_t move) {
-	print1("in nightmove");
-	return 0;
 }

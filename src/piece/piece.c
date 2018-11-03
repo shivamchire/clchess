@@ -73,6 +73,31 @@ const short yaxis[] = { 0, 1, 1, 1, 0, -1, -1, -1 };
 */
 //---- for piece list ----
 
+void printpieceinfo(piece_t *piece) {
+	vprint2("piece -> %c", piece->piece);
+	vprint2("color -> %lx", COLOR(piece->bitpiece));
+	vprint2("Vert -> %lx, Pve -> %lx, Nve -> %lx", GetV(piece->bitpiece),
+												GetVPveField(piece->bitpiece),
+												GetVNveField(piece->bitpiece));
+	vprint2("Hori -> %lx, Pve -> %lx, Nve -> %lx", GetH(piece->bitpiece),
+												GetHPveField(piece->bitpiece),
+												GetHNveField(piece->bitpiece));
+	vprint2("Diagonal -> %lx, NW -> %lx, NE -> %lx, SW -> %lx, SE -> %lx",
+												GetD(piece->bitpiece),
+												GetDNWField(piece->bitpiece),
+												GetDNEField(piece->bitpiece),
+												GetDSWField(piece->bitpiece),
+												GetDSEField(piece->bitpiece));
+	vprint2("TwoMoves : NW -> %lx, NE -> %lx, SW -> %lx, SE -> %lx, WN-> %lx, WS -> %lx, EN -> %lx, ES -> %lx",
+												GetNightNW(piece->bitpiece),
+												GetNightNE(piece->bitpiece),
+												GetNightSW(piece->bitpiece),
+												GetNightSE(piece->bitpiece),
+												GetNightWN(piece->bitpiece),
+												GetNightWS(piece->bitpiece),
+												GetNightEN(piece->bitpiece),
+												GetNightES(piece->bitpiece));
+}
 void init_piece(piece_t *piece, char p, pos_t pos) {
 	switch(p) {
 		case 'P':
@@ -122,5 +147,6 @@ void init_piece(piece_t *piece, char p, pos_t pos) {
 		init_piece_list(&(piece->protecting));
 		init_piece_list(&(piece->attack_by));
 		init_piece_list(&(piece->attacking));
+		printpieceinfo(piece);
 	}
 }

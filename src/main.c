@@ -15,9 +15,9 @@ void twoplayer() {
 
 	print4("In twoplayer\n");
 	chess_t chess;
+	move_t str_move;
 	init_chess(&chess);
 	print_board(chess.board);
-	move_t str_move;
 	while(1) {
 		// take next move
 		if(chess.player == WHITE) {
@@ -35,10 +35,13 @@ void twoplayer() {
 		// update board according to next move
 		str_move = conv_str_move(move);
 		if(str_move.x1 == -1) {
+			print4();
 			printf("Invalid move\n");
 			continue;
 		}
-		if(inbtw(chess.board, str_move) || islegal(chess.board, str_move)) {
+		chess.move = str_move;
+		if(islegal(&chess)) {
+			print4();
 			printf("Invalid move\n");
 			continue;
 		}

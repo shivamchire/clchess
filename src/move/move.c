@@ -2,21 +2,21 @@
 #include "../piece/piece.h"
 #include "../error/err.h"
 bool (*move_mat[15][15])(piece_t *piece, int x, int y) = {
-	{ nwdiag, invalid, invalid, invalid, invalid, invalid, invalid, pvevertical, invalid, invalid, invalid, invalid, invalid, invalid, nediag },
-	{ invalid, nwdiag, invalid, invalid, invalid, invalid, invalid, pvevertical, invalid, invalid, invalid, invalid, invalid, nediag, invalid },
-	{ invalid, invalid, nwdiag, invalid, invalid, invalid, invalid, pvevertical, invalid, invalid, invalid, invalid, nediag, invalid, invalid },
-	{ invalid, invalid, invalid, nwdiag, invalid, invalid, invalid, pvevertical, invalid, invalid, invalid, nediag, invalid, invalid, invalid },
-	{ invalid, invalid, invalid, invalid, nwdiag, invalid, invalid, pvevertical, invalid, invalid, nediag, invalid, invalid, invalid, invalid },
-	{ invalid, invalid, invalid, invalid, invalid, nwdiag, nightnwmove, pvevertical, nightnemove, nediag, invalid, invalid, invalid, invalid, invalid },
-	{ invalid, invalid, invalid, invalid, invalid, nightwnmove, nwdiag, pvevertical, nediag, nightenmove, invalid, invalid, invalid, invalid, invalid },
-	{ nvehorizontal, nvehorizontal, nvehorizontal, nvehorizontal, nvehorizontal, nvehorizontal, nvehorizontal, invalid, pvehorizontal, pvehorizontal, pvehorizontal, pvehorizontal, pvehorizontal, pvehorizontal, pvehorizontal},
-	{ invalid, invalid, invalid, invalid, invalid, nightwsmove, swdiag, nvevertical, sediag, nightesmove, invalid, invalid, invalid, invalid, invalid },
-	{ invalid, invalid, invalid, invalid, invalid, swdiag, nightswmove, nvevertical, nightsemove, sediag, invalid, invalid, invalid, invalid, invalid },
-	{ invalid, invalid, invalid, invalid, swdiag, invalid, invalid, nvevertical, invalid, invalid, sediag, invalid, invalid, invalid, invalid },
-	{ invalid, invalid, invalid, swdiag, invalid, invalid, invalid, nvevertical, invalid, invalid, invalid, sediag, invalid, invalid, invalid },
-	{ invalid, invalid, swdiag, invalid, invalid, invalid, invalid, nvevertical, invalid, invalid, invalid, invalid, sediag, invalid, invalid },
+	{ swdiag, invalid, invalid, invalid, invalid, invalid, invalid, nvevertical, invalid, invalid, invalid, invalid, invalid, invalid, sediag },
 	{ invalid, swdiag, invalid, invalid, invalid, invalid, invalid, nvevertical, invalid, invalid, invalid, invalid, invalid, sediag, invalid },
-	{ swdiag, invalid, invalid, invalid, invalid, invalid, invalid, nvevertical, invalid, invalid, invalid, invalid, invalid, invalid, sediag }
+	{ invalid, invalid, swdiag, invalid, invalid, invalid, invalid, nvevertical, invalid, invalid, invalid, invalid, sediag, invalid, invalid },
+	{ invalid, invalid, invalid, swdiag, invalid, invalid, invalid, nvevertical, invalid, invalid, invalid, sediag, invalid, invalid, invalid },
+	{ invalid, invalid, invalid, invalid, swdiag, invalid, invalid, nvevertical, invalid, invalid, sediag, invalid, invalid, invalid, invalid },
+	{ invalid, invalid, invalid, invalid, invalid, swdiag, nightswmove, nvevertical, nightsemove, sediag, invalid, invalid, invalid, invalid, invalid },
+	{ invalid, invalid, invalid, invalid, invalid, nightwsmove, swdiag, nvevertical, sediag, nightesmove, invalid, invalid, invalid, invalid, invalid },
+	{ nvehorizontal, nvehorizontal, nvehorizontal, nvehorizontal, nvehorizontal, nvehorizontal, nvehorizontal, invalid, pvehorizontal, pvehorizontal, pvehorizontal, pvehorizontal, pvehorizontal, pvehorizontal, pvehorizontal},
+	{ invalid, invalid, invalid, invalid, invalid, nightwnmove, nwdiag, pvevertical, nediag, nightenmove, invalid, invalid, invalid, invalid, invalid },
+	{ invalid, invalid, invalid, invalid, invalid, nwdiag, nightnwmove, pvevertical, nightnemove, nediag, invalid, invalid, invalid, invalid, invalid },
+	{ invalid, invalid, invalid, invalid, nwdiag, invalid, invalid, pvevertical, invalid, invalid, nediag, invalid, invalid, invalid, invalid },
+	{ invalid, invalid, invalid, nwdiag, invalid, invalid, invalid, pvevertical, invalid, invalid, invalid, nediag, invalid, invalid, invalid },
+	{ invalid, invalid, nwdiag, invalid, invalid, invalid, invalid, pvevertical, invalid, invalid, invalid, invalid, nediag, invalid, invalid },
+	{ invalid, nwdiag, invalid, invalid, invalid, invalid, invalid, pvevertical, invalid, invalid, invalid, invalid, invalid, nediag, invalid },
+	{ nwdiag, invalid, invalid, invalid, invalid, invalid, invalid, pvevertical, invalid, invalid, invalid, invalid, invalid, invalid, nediag },
 };
 bool (**move_mat_mid)(piece_t*, int, int) = &(move_mat[7][7]);
 /*
@@ -37,10 +37,10 @@ move_t conv_str_move(char *move) {
 	   move[2] >= 'a' && move[2] <= 'h' &&
 	   move[3] >= '1' && move[3] <= '8') {
 		str_move.x1 = move[0] - 'a';
-		str_move.y1 = 7 - (move[1] - '0' - 1);// 7- since board in array
+		str_move.y1 = (move[1] - '0' - 1);// 7- since board in array
 						    // is opposite of what gets printed
 		str_move.x2 = move[2] - 'a';
-		str_move.y2 = 7 - (move[3] - '0' - 1);
+		str_move.y2 = (move[3] - '0' - 1);
 	}
 	else {
 		str_move.x1 = -1;
@@ -108,16 +108,18 @@ int inbtw(board_t board, move_t move) {
 	}
 	return 0;
 }
-
+//TODO for any move after checking if that move is doable create a second chess
+//instance do that move in that chess instance and see if king is under check
+//TODO handle castling
 int islegal(chess_t *chess) {
 	board_t board = chess->board;
 	move_t move = chess->move;
 	piece_t *src_piece = board[move.y1][move.x1];
 	piece_t *dest_piece = board[move.y2][move.x2];
-	int x = move.x1 - move.x2;
-	int y = move.y1 - move.y2;
-	bool (*ptr)(piece_t*, int, int) = move_mat[7 - (move.y1 - move.y2)]
-					[7 - (move.x1 - move.x2)];
+	int x = move.x2 - move.x1;
+	int y = move.y2 - move.y1;
+	bool (*ptr)(piece_t*, int, int) = move_mat[7 + y]
+					[7 + x];
 	if(!src_piece) {
 		print3("No piece at starting tile");
 		return ENOPIECE;
@@ -131,7 +133,7 @@ int islegal(chess_t *chess) {
 		return EWCOL;
 	}
 	//check if capture of same side
-	if(dest_piece && (~(COLOR(src_piece->bitpiece) ^ COLOR(dest_piece->bitpiece)))) {
+	if(dest_piece && (!(COLOR(src_piece->bitpiece) ^ COLOR(dest_piece->bitpiece)))) {
 		print3("You cant capture your own piece");
 		return EOWNCAP;
 	}
@@ -144,6 +146,7 @@ bool pvevertical(piece_t *piece, int x, int y) {
 }
 bool nvevertical(piece_t *piece, int x, int y) {
 	print1();
+	vprint1("%lx %ld", GetVNveField(piece->bitpiece), (uint64_t)-y);
 	return !(GetVNveField(piece->bitpiece) >= (uint64_t)-y);
 }
 bool pvehorizontal(piece_t *piece, int x, int y) {

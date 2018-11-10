@@ -13,14 +13,14 @@
  * P, p = pawn
  */
 char char_board[8][8] = {
-	{'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'},
-	{'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
-	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+	{'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'},
 	{'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'},
-	{'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'}
+	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+	{'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
+	{'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'}
 };
 void init_board(board_t board) {
 
@@ -41,20 +41,4 @@ void init_board(board_t board) {
 			}
 		}
 	}
-}
-
-
-/*
- * update board according to move
- */
-void update_board(board_t board, move_t move) {
-	print2("Updating board");
-	piece_t *src_piece = board[move.y1][move.x1];
-	pos_t pos;
-	pos.x = move.x2;
-	pos.y = move.y2;
-	src_piece->pos = pos;
-	//TODO destroy dest_piece
-	board[move.y2][move.x2] = board[move.y1][move.x1];
-	board[move.y1][move.x1] = NULL;
 }

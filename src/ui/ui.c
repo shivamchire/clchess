@@ -29,8 +29,8 @@ void print_board(board_t board) {
 					break;
 				// vertical partioning and pieces in that box
 				case 2:
-					if(board[l][k % 8]) {
-						p = board[l][k % 8]->piece;
+					if(board[7 - l][k % 8]) {
+						p = board[7 - l][k % 8]->piece;
 					}
 					else {
 						p = ' ';

@@ -45,11 +45,11 @@
 #define CheckPos (48)
 #define PinPos (49)
 #define LMSPos (50)
-#define EnPassantPos (51)
-//#define TwoMovePos (49)
+#define TwoMovePos (51)
+#define EnPassantPos (52)
 /*
  *                  -ve  +ve  -ve  +ve  SW   SE   NE   NW
- * E xLPC TTTT TTTT VVVV VVVV HHHH HHHH DDDD DDDD DDDD DDDD xxxK/Q VHDC
+ * E TLPC TTTT TTTT VVVV VVVV HHHH HHHH DDDD DDDD DDDD DDDD xxxK/Q VHDC
  */
 /* Field Mask */
 #define DiagMsk (0xffffUL << DiagFieldPos)
@@ -76,30 +76,31 @@
 #define PinMsk (1UL << PinPos)
 #define LMSMsk (1UL << LMSPos)
 #define EnPassantMsk (1UL << EnPassantPos)
-//#define TwoMoveMsk (1UL << TwoMovePos)
+#define TwoMoveMsk (1UL << TwoMovePos)
 /* Set Bits */
 #define SetV(x) ((x) |= VertBit)
 #define SetH(x) ((x) |= HoriBit)
 #define SetD(x) ((x) |= DiagBit)
 #define SetK(x) ((x) |= VertBit | HoriBit | DiagBit | KQBit)
 /* Set Field */
-#define SetVPveField(x) ((((uint64_t)x) << VertFieldPvePos) & VertPveMsk)
-#define SetVNveField(x) (((uint64_t)(x) << VertFieldNvePos) & VertNveMsk)
-#define SetHPveField(x) (((uint64_t)(x) << HoriFieldPvePos) & HoriPveMsk)
-#define SetHNveField(x) (((uint64_t)(x) << HoriFieldNvePos) & HoriNveMsk)
-#define SetDNWField(x) (((uint64_t)(x) << DiagNWPos) & DiagNWMsk)
-#define SetDNEField(x) (((uint64_t)(x) << DiagNEPos) & DiagNEMsk)
-#define SetDSWField(x) (((uint64_t)(x) << DiagSWPos) & DiagSWMsk)
-#define SetDSEField(x) (((uint64_t)(x) << DiagSEPos) & DiagSEMsk)
-#define SetNightField(x) ((uint64_t)(x) << NightFieldPos)
-#define SetNightNE NightNEMsk
-#define SetNightNW NightNWMsk
-#define SetNightSE NightSEMsk
-#define SetNightSW NightSWMsk
-#define SetNightEN NightENMsk
-#define SetNightES NightESMsk
-#define SetNightWN NightWNMsk
-#define SetNightWS NightWSMsk
+#define SetVPveField(x, y) ((x)->bitpiece |= VertPveMsk, (x)->bitpiece &= (((uint64_t)(y) << VertFieldPvePos) | ~VertPveMsk))
+#define SetVNveField(x, y) ((x)->bitpiece |= VertNveMsk, (x)->bitpiece &= (((uint64_t)(y) << VertFieldNvePos) | ~VertNveMsk))
+#define SetHPveField(x, y) ((x)->bitpiece |= HoriPveMsk, (x)->bitpiece &= (((uint64_t)(y) << HoriFieldPvePos) | ~HoriPveMsk))
+#define SetHNveField(x, y) ((x)->bitpiece |= HoriNveMsk, (x)->bitpiece &= (((uint64_t)(y) << HoriFieldNvePos) | ~HoriNveMsk))
+#define SetDNWField(x, y) ((x)->bitpiece |= DiagNWMsk, (x)->bitpiece &= (((uint64_t)(y) << DiagNWPos) | ~DiagNWMsk))
+#define SetDNEField(x, y) ((x)->bitpiece |= DiagNEMsk, (x)->bitpiece &= (((uint64_t)(y) << DiagNEPos) | ~DiagNEMsk))
+#define SetDSWField(x, y) ((x)->bitpiece |= DiagSWMsk, (x)->bitpiece &= (((uint64_t)(y) << DiagSWPos) | ~DiagSWMsk))
+#define SetDSEField(x, y) ((x)->bitpiece |= DiagSEMsk, (x)->bitpiece &= (((uint64_t)(y) << DiagSEPos) | ~DiagSEMsk))
+#define SetNightField(x, y) ((x)->bitpiece |= NightFieldMsk, (x)->bitpiece &= (((uint64_t)(y) << NightFieldPos) | ~NightFieldMsk)
+#define SetNightNE(x, y) ((x)->bitpiece |= NightNEMsk, (x)->bitpiece &= (((uint64_t)(y) << NightNEPos) | ~NightNEMsk))
+#define SetNightNW(x, y) ((x)->bitpiece |= NightNWMsk, (x)->bitpiece &= (((uint64_t)(y) << NightNWPos) | ~NightNWMsk))
+#define SetNightSE(x, y) ((x)->bitpiece |= NightSEMsk, (x)->bitpiece &= (((uint64_t)(y) << NightSEPos) | ~NightSEMsk))
+#define SetNightSW(x, y) ((x)->bitpiece |= NightSWMsk, (x)->bitpiece &= (((uint64_t)(y) << NightSWPos) | ~NightSWMsk))
+#define SetNightEN(x, y) ((x)->bitpiece |= NightENMsk, (x)->bitpiece &= (((uint64_t)(y) << NightENPos) | ~NightENMsk))
+#define SetNightES(x, y) ((x)->bitpiece |= NightESMsk, (x)->bitpiece &= (((uint64_t)(y) << NightESPos) | ~NightESMsk))
+#define SetNightWN(x, y) ((x)->bitpiece |= NightWNMsk, (x)->bitpiece &= (((uint64_t)(y) << NightWNPos) | ~NightWNMsk))
+#define SetNightWS(x, y) ((x)->bitpiece |= NightWSMsk, (x)->bitpiece &= (((uint64_t)(y) << NightWSPos) | ~NightWSMsk))
+#define SetTwoMove(x, y) ((x)->bitpiece |= TwoMoveMsk, (x)->bitpiece &= (((uint64_t)(y) << TwoMovePos) | ~TwoMoveMsk))
 
 /* Get Bits */
 #define GetV(x) (((x) & VertBit) >> VertPos)
@@ -124,8 +125,10 @@
 #define GetNightES(x) (((x) & NightESMsk) >> NightESPos)
 #define GetNightWN(x) (((x) & NightWNMsk) >> NightWNPos)
 #define GetNightWS(x) (((x) & NightWSMsk) >> NightWSPos)
+#define GetTwoMove(x) (((x) & TwoMoveMsk) >> TwoMovePos)
 /* Pieces */
-#define PieceMsk (VertBit | HoriBit | DiagBit)
+#define PieceMsk (VertBit | HoriBit | DiagBit | KQBit)
+#define GetPiece(x) ((x) & PieceMsk)
 #define WPawn (VertBit | DiagBit | WHITE)
 #define WRook (VertBit | HoriBit | WHITE)
 #define WNight (0x0 | WHITE)
@@ -139,18 +142,24 @@
 #define BQueen (VertBit | HoriBit | DiagBit)
 #define BKing (VertBit | HoriBit | DiagBit | KQBit)
 #define King BKing
-
-
-
+#define Pawn   BPawn
+#define Rook   BRook
+#define Night  BNight
+#define Bishop BBishop
+#define Queen  BQueen
 //---- for piece list ----
 void init_piece_list(piece_list_t* l);
 void insert_piece(piece_list_t *l, piece_t *p);
-void delete_piece(piece_list_t *l, size_t pos);
+void delete_piece(piece_list_t *l, piece_t *piece);
 piece_t *get_next(piece_list_t *l);
 void destroy_piece_list(piece_list_t *l);
 
 void init_piece_list(piece_list_t* l);
+void degen_list(board_t board, piece_t *piece);
+void gen_list(board_t board, piece_t *piece);
 //---- for piece list ----
 
+void print_all_list(piece_t *p);
 void init_piece(piece_t *piece, char p, pos_t pos);
+void printpieceinfo(piece_t *piece);
 #endif

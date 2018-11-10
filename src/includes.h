@@ -3,8 +3,9 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include "debug.h"
-#include "piece/list/g_slnl.h"
+#include "piece/list/slnl.h"
 #define ABS(x) ((x) > 0 ? (x) : (-(x)))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
@@ -12,8 +13,8 @@
 //x = cols
 //y = ranks
 typedef struct pos {
-	unsigned x;
-	unsigned y;
+	int x;
+	int y;
 }pos_t;
 typedef list_t piece_list_t;
 //this struct will be use as node in list which is in struct of each piece_type

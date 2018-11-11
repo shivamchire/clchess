@@ -1,6 +1,7 @@
 #include "move.h"
 #include "../piece/piece.h"
 #include "../error/err.h"
+#include "../chess/chess.h"
 bool (*move_mat[15][15])(piece_t *piece, int x, int y) = {
 	{ swdiag, invalid, invalid, invalid, invalid, invalid, invalid, nvevertical, invalid, invalid, invalid, invalid, invalid, invalid, sediag },
 	{ invalid, swdiag, invalid, invalid, invalid, invalid, invalid, nvevertical, invalid, invalid, invalid, invalid, invalid, sediag, invalid },
@@ -118,8 +119,8 @@ int islegal(chess_t *chess) {
 	piece_t *dest_piece = board[move.y2][move.x2];
 	int x = move.x2 - move.x1;
 	int y = move.y2 - move.y1;
-	bool (*ptr)(piece_t*, int, int) = move_mat[7 + y]
-					[7 + x];
+	int ret;
+	bool (*ptr)(piece_t*, int, int) = move_mat[7 + y][7 + x];
 	if(!src_piece) {
 		print3("No piece at starting tile");
 		return ENOPIECE;
@@ -137,7 +138,17 @@ int islegal(chess_t *chess) {
 		print3("You cant capture your own piece");
 		return EOWNCAP;
 	}
-	return ptr(src_piece, x, y);
+	ret =  ptr(src_piece, x, y);
+	if(ret) {
+		return ret;
+	}
+	else {
+		chess_t chesscopy;
+		creatchesscopy(&chesscopy, chess);
+		update_chess(&chesscopy);
+		return checkforcheck(&chesscopy);
+
+	}
 }
 
 bool pvevertical(piece_t *piece, int x, int y) {

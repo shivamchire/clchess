@@ -12,10 +12,9 @@ int main() {
 	twoplayer();
 }
 void twoplayer() {
-
 	print4("In twoplayer\n");
 	chess_t chess;
-	init_chess(&chess);
+	init_chess(&chess, char_board);
 	print_board(chess.board);
 	while(1) {
 		// take next move

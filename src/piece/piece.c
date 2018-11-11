@@ -106,9 +106,19 @@ pos_t setfield(board_t board, piece_t *piece, int x, int y) {
 					SetDNEField(piece, 1);
 					pos.x = pos.y = 1;
 				}
+				else if(x > 0 && y > 0 && board[piece->pos.y + 1][piece->pos.x + 1] &&
+						!(COLOR(board[piece->pos.y + 1][piece->pos.x + 1]->bitpiece) ^ WHITE)) {
+					pos.x = pos.y = 1;
+				}
 				else if(x < 0 && y > 0 && board[piece->pos.y + 1][piece->pos.x - 1] &&
 						(COLOR(board[piece->pos.y + 1][piece->pos.x - 1]->bitpiece) ^ WHITE)) {
 					SetDNWField(piece, 1);
+					pos.x = -1;
+					pos.y = 1;
+				}
+				else if(x < 0 && y > 0 && board[piece->pos.y + 1][piece->pos.x - 1] &&
+						!(COLOR(board[piece->pos.y + 1][piece->pos.x - 1]->bitpiece) ^ WHITE)) {
+					//TODO this is not working e2e4 e7e5 g1f3
 					pos.x = -1;
 					pos.y = 1;
 				}
@@ -139,8 +149,18 @@ pos_t setfield(board_t board, piece_t *piece, int x, int y) {
 					SetDSWField(piece, 1);
 					pos.x = pos.y = -1;
 				}
+				else if(x < 0 && y < 0 && board[piece->pos.y - 1][piece->pos.x - 1] &&
+						!(COLOR(board[piece->pos.y - 1][piece->pos.x - 1]->bitpiece) ^ BLACK)) {
+					pos.x = pos.y = -1;
+				}
 				else if(x > 0 && y < 0 && board[piece->pos.y - 1][piece->pos.x + 1] &&
 						!(COLOR(board[piece->pos.y - 1][piece->pos.x + 1]->bitpiece) ^ WHITE)) {
+					SetDSEField(piece, 1);
+					pos.x = 1;
+					pos.y = -1;
+				}
+				else if(x > 0 && y < 0 && board[piece->pos.y - 1][piece->pos.x + 1] &&
+						!(COLOR(board[piece->pos.y - 1][piece->pos.x + 1]->bitpiece) ^ BLACK)) {
 					SetDSEField(piece, 1);
 					pos.x = 1;
 					pos.y = -1;
@@ -301,11 +321,16 @@ void init_piece_list(piece_list_t* l) {
 }
 
 void deletebypos(piece_list_t *l, int pos) {
+	vprint1("deleting from %p", l);
 	remov(l, pos);
 }
 
 void delete_piece(piece_list_t *l, piece_t *piece) {
-	remov(l, search(l, piece));
+	int num;
+	if((num = search(l, piece))) {
+		vprint1("Deleting %c at (%c, %d) from %p", piece->piece, piece->pos.x + 'a', piece->pos.y, l);
+		remov(l, num);
+	}
 }
 /*
  * dont use this since it dont consider case of inbtw delete and insert
@@ -360,7 +385,7 @@ int getnumofelem(piece_list_t *l) {
 //previous position
 //WARNING dont pass piece to setfield since setfield use piece->pos to calculate
 //move and since pos has its previous position it will calculate it wrong
-void degen_list(board_t board, piece_t *piece) {
+void degen_list(chess_t *chess, board_t board, piece_t *piece) {
 	//direction along line joining piece in the list and the piece to whom list
 	//belong too
 	int dirx, diry,
@@ -371,64 +396,92 @@ void degen_list(board_t board, piece_t *piece) {
 	//use to store a third piece
 			*anotherpiece;
 	//to store position of new pieces
-	pos_t pos;
+	pos_t pos,
+		  init_pos = { .x = chess->move.x1, .y = chess->move.y1};
 	//empty protecting list also delete pieces in protected_by list of pieces
 	//in protecting list
 	while(!isempty(&piece->protecting)) {
 		p = (piece_t *)see(&piece->protecting, 1);
+		vprint1("deleting %c at (%c, %d) from protecting list of %c at (%c, %d)", p->piece, Coordinate(p), piece->piece, Coordinate(piece));
 		deletebypos(&piece->protecting, 1);
 		delete_piece(&p->protected_by, piece);
 	}
 	//emptying attacking list
 	while(!isempty(&piece->attacking)) {
 		p = (piece_t *)see(&piece->attacking, 1);
+		vprint1("deleting %c at (%c, %d) from attacking list of %c at (%c, %d)", p->piece, Coordinate(p), piece->piece, Coordinate(piece));
 		deletebypos(&piece->attacking, 1);
 		delete_piece(&p->attack_by, piece);
 	}
 	while(!isempty(&piece->protected_by)) {
 		p = (piece_t *)see(&piece->protected_by, 1);
+		vprint1("deleting %c at (%c, %d) from protected_by list of %c at (%c, %d)", p->piece, Coordinate(p), piece->piece, Coordinate(piece));
 		deletebypos(&piece->protected_by, 1);
 		delete_piece(&p->protecting, piece);
 		if((PieceMsk & p->bitpiece) == Pawn) {
+			print1("pawn case");
 		}
 		else if((PieceMsk & p->bitpiece) == Night) {
-			shift = NightBitsPos[2 + (piece->pos.y - p->pos.y)][2 + (piece->pos.x - p->pos.x)];
+			print1("night case");
+			shift = NightBitsPos[2 + (init_pos.y - p->pos.y)][2 + (init_pos.x - p->pos.x)];
 			p->bitpiece |= 1UL << shift;
 		}
-		else if((GetPiece(p->bitpiece) == King)) {
-		}
 		else {
-			dirx = piece->pos.x - p->pos.x;
-			diry = piece->pos.y - p->pos.y;
+			print1("others case");
+			dirx = init_pos.x - p->pos.x;
+			diry = init_pos.y - p->pos.y;
 			if(dirx)
 				dirx = dirx / ABS(dirx);
 			if(diry)
 				diry = diry / ABS(diry);
 			anotherpiece = findpiece(board, p->pos.x, p->pos.y, dirx, diry, &(pos.x), &(pos.y));
-			//if anotherpiece dont exist just update the appropriate field
-			if(!anotherpiece) {
-				setfield(board, p, pos.x - p->pos.x, pos.y - p->pos.y);
-			}
-			//else
-			else {
-				//if both the pieces are of different color add anotherpiece
-				//to attacking list of p and add p to attack_by list of anotherpiece
-				//and set appropriate field of p to x or y
-				if(COLOR(anotherpiece->bitpiece) ^ COLOR(p->bitpiece)) {
-					pos = setfield(board, p, anotherpiece->pos.x - p->pos.x, anotherpiece->pos.y - p->pos.y);
-					if((pos.x != 0 || pos.y != 0) && board[p->pos.y + pos.y][p->pos.x + pos.x]) {
-						insert_piece(&p->attacking, anotherpiece);
-						insert_piece(&piece->attack_by, p);
-					}
+			if(anotherpiece != piece) {
+				//if anotherpiece dont exist just update the appropriate field
+				if(!anotherpiece) {
+					print1("anotherpiece not found");
+					setfield(board, p, pos.x - p->pos.x, pos.y - p->pos.y);
 				}
-				//else if of same color add anotherpiece in protecting list of
-				//p and add p in protected_by list of anotherpiece
-				//and set appropriate field of p to x-1 or y-1
+				//else
 				else {
-					pos = setfield(board, p, (anotherpiece->pos.x - p->pos.x) - 1, (anotherpiece->pos.y - p->pos.y) - 1);
-					if((pos.x != 0 || pos.y != 0) && board[p->pos.y + pos.y][p->pos.x + pos.x]) {
-						insert_piece(&p->protecting, anotherpiece);
-						insert_piece(&anotherpiece->protected_by, p);
+					print1("anotherpiece found");
+					//if both the pieces are of different color add anotherpiece
+					//to attacking list of p and add p to attack_by list of anotherpiece
+					//and set appropriate field of p to x or y
+					if(COLOR(anotherpiece->bitpiece) ^ COLOR(p->bitpiece)) {
+						pos = setfield(board, p, anotherpiece->pos.x - p->pos.x, anotherpiece->pos.y - p->pos.y);
+						if((pos.x != 0 || pos.y != 0) && board[p->pos.y + pos.y][p->pos.x + pos.x]) {
+							vprint1("%c can attack %c at (%c, %d)", p->piece, anotherpiece->piece, Coordinate(anotherpiece));
+							insert_piece(&p->attacking, anotherpiece);
+							insert_piece(&anotherpiece->attack_by, p);
+						}
+					}
+					//else if of same color add anotherpiece in protecting list of
+					//p and add p in protected_by list of anotherpiece
+					//and set appropriate field of p to x-1 or y-1
+					else {
+					//	if(anotherpiece->pos.x - p->pos.x == 0 && anotherpiece->pos.y - p->pos.y == 0) {
+					//		x = 0;
+					//		y = 0;
+					//	}
+					//	else if(anotherpiece->pos.y - p->pos.y == 0) {
+					//		y = 0;
+					//		x = (anotherpiece->pos.x - p->pos.x) - 1;
+					//	}
+					//	else if(anotherpiece->pos.x - p->pos.x == 0) {
+					//		x = 0;
+					//		y = (anotherpiece->pos.y - p->pos.y) - 1;
+					//	}
+					//	else {
+					//		x = (anotherpiece->pos.x - p->pos.x) - 1;
+					//		y = (anotherpiece->pos.y - p->pos.y) - 1;
+					//	}
+
+						pos = setfield(board, p, anotherpiece->pos.x - p->pos.x, anotherpiece->pos.y - p->pos.y);
+						if((pos.x != 0 || pos.y != 0) && board[p->pos.y + pos.y][p->pos.x + pos.x]) {
+							vprint1("%c can protect %c at (%c, %d)", p->piece, anotherpiece->piece, Coordinate(anotherpiece));
+							insert_piece(&p->protecting, anotherpiece);
+							insert_piece(&anotherpiece->protected_by, p);
+						}
 					}
 				}
 			}
@@ -436,85 +489,93 @@ void degen_list(board_t board, piece_t *piece) {
 	}
 	//attack_by list
 	while(!isempty(&piece->attack_by)) {
+		print1("in attack_by list of degen_list");
 		p = (piece_t *)see(&piece->attack_by, 1);
+		vprint1("deleting %c at (%c, %d) from attack_by list of %c", p->piece, Coordinate(p), piece->piece);
 		deletebypos(&piece->attack_by, 1);
 		delete_piece(&p->attacking, piece);
-		if((PieceMsk & p->bitpiece) == Pawn) {
-			dirx = piece->pos.x - p->pos.x;
-			if(dirx)
-				dirx = dirx / ABS(dirx);
-			diry = piece->pos.y - p->pos.y;
-			if(diry)
-				diry = diry / ABS(diry);
-			if(dirx > 0 && diry > 0) {
-				SetDNEField(p, 0);
-			}
-			else if(dirx > 0 && diry < 0) {
-				SetDSEField(p, 0);
-			}
-			else if(dirx < 0 && diry > 0) {
-				SetDNWField(p, 0);
-			}
-			else if(dirx < 0 && diry < 0) {
-				SetDSWField(p, 0);
-			}
-			else {
-				eprint("ERROR");
-			}
-		}
-		else if((PieceMsk & p->bitpiece) == Night) {
-		}
-		else if(GetPiece(p->bitpiece) == King) {
-		}
-		else {
-			dirx = p->pos.x - piece->pos.x;
-			diry = p->pos.y - piece->pos.y;
-			if(dirx)
-				dirx = dirx / ABS(dirx);
-			if(diry)
-				diry = diry / ABS(diry);
-			anotherpiece = findpiece(board, p->pos.x, p->pos.y, dirx, diry, &(pos.x), &(pos.y));
-			//if anotherpiece dont exist just update the appropriate field
-			if(!anotherpiece) {
-				setfield(board, p, pos.x - p->pos.x, pos.y - p->pos.y);
-			}
-			//else
-			else {
-				//if both the pieces are of different color add anotherpiece
-				//to attacking list of p and add p to attack_by list of anotherpiece
-				//and set appropriate field of p to x or y
-				if(COLOR(anotherpiece->bitpiece) ^ COLOR(p->bitpiece)) {
-					pos = setfield(board, p, anotherpiece->pos.x - p->pos.x, anotherpiece->pos.y - p->pos.y);
-					if((pos.x != 0 || pos.y != 0) && board[p->pos.y + pos.y][p->pos.x + pos.x]) {
-						insert_piece(&p->attacking, anotherpiece);
-						insert_piece(&piece->attack_by, p);
-					}
+		if(!(p == chess->captured_piece)) {
+			if((PieceMsk & p->bitpiece) == Pawn) {
+				print1("in pawn case");
+				dirx = init_pos.x - p->pos.x;
+				if(dirx)
+					dirx = dirx / ABS(dirx);
+				diry = init_pos.y - p->pos.y;
+				if(diry)
+					diry = diry / ABS(diry);
+				if(dirx > 0 && diry > 0) {
+					SetDNEField(p, 0);
 				}
-				//else if of same color add anotherpiece in protecting list of
-				//p and add p in protected_by list of anotherpiece
-				//and set appropriate field of p to x-1 or y-1
+				else if(dirx > 0 && diry < 0) {
+					SetDSEField(p, 0);
+				}
+				else if(dirx < 0 && diry > 0) {
+					SetDNWField(p, 0);
+				}
+				else if(dirx < 0 && diry < 0) {
+					SetDSWField(p, 0);
+				}
 				else {
-					pos = setfield(board, p, (anotherpiece->pos.x - p->pos.x) - 1, (anotherpiece->pos.y - p->pos.y) - 1);
-					if((pos.x != 0 || pos.y != 0) && board[p->pos.y + pos.y][p->pos.x + pos.x]) {
-						insert_piece(&p->protecting, anotherpiece);
-						insert_piece(&anotherpiece->protected_by, p);
+					eprint("ERROR");
+				}
+			}
+			else if((PieceMsk & p->bitpiece) == Night) {
+			}
+			else if(GetPiece(p->bitpiece) == King) {
+			}
+			else {
+				print1("in other piece case");
+				dirx = init_pos.x - p->pos.x;
+				diry = init_pos.y - p->pos.y;
+				vprint1("in dir (%d, %d)", dirx, diry);
+				if(dirx)
+					dirx = dirx / ABS(dirx);
+				if(diry)
+					diry = diry / ABS(diry);
+				anotherpiece = findpiece(board, p->pos.x, p->pos.y, dirx, diry, &(pos.x), &(pos.y));
+				//if anotherpiece dont exist just update the appropriate field
+				if(!anotherpiece) {
+					print1("anotherpiece not found");
+					setfield(board, p, pos.x - p->pos.x, pos.y - p->pos.y);
+				}
+				//else
+				else {
+					print1("anotherpiece found");
+					//if both the pieces are of different color add anotherpiece
+					//to attacking list of p and add p to attack_by list of anotherpiece
+					//and set appropriate field of p to x or y
+					if(COLOR(anotherpiece->bitpiece) ^ COLOR(p->bitpiece)) {
+						pos = setfield(board, p, anotherpiece->pos.x - p->pos.x, anotherpiece->pos.y - p->pos.y);
+						if((pos.x != 0 || pos.y != 0) && board[p->pos.y + pos.y][p->pos.x + pos.x]) {
+							vprint1("%c can attack %c at (%c, %d)", p->piece, anotherpiece->piece, Coordinate(anotherpiece));
+							insert_piece(&p->attacking, anotherpiece);
+							insert_piece(&anotherpiece->attack_by, p);
+						}
+					}
+					//else if of same color add anotherpiece in protecting list of
+					//p and add p in protected_by list of anotherpiece
+					//and set appropriate field of p to x-1 or y-1
+					else {
+						pos = setfield(board, p, (anotherpiece->pos.x - p->pos.x) - 1, (anotherpiece->pos.y - p->pos.y) - 1);
+						if((pos.x != 0 || pos.y != 0) && board[p->pos.y + pos.y][p->pos.x + pos.x]) {
+							vprint1("%c can protect %c at (%c , %d)", p->piece, anotherpiece->piece, Coordinate(anotherpiece));
+							insert_piece(&p->protecting, anotherpiece);
+							insert_piece(&anotherpiece->protected_by, p);
+						}
 					}
 				}
 			}
 		}
 	}
-	if(board[piece->pos.y - 1][piece->pos.x] &&
-			GetPiece(board[piece->pos.y - 1][piece->pos.x]->bitpiece) == WPawn) {
-		SetVPveField(board[piece->pos.y - 1][piece->pos.x], 1);
+	if((init_pos.y - 1) >= 0 && board[init_pos.y - 1][init_pos.x] &&
+			GetPiece(board[init_pos.y - 1][init_pos.x]->bitpiece) == WPawn) {
+		SetVPveField(board[init_pos.y - 1][init_pos.x], 1);
 	}
-	if(board[piece->pos.y + 1][piece->pos.x] &&
-			GetPiece(board[piece->pos.y + 1][piece->pos.x]->bitpiece) == BPawn) {
-		SetVNveField(board[piece->pos.y + 1][piece->pos.x], 1);
+	if(init_pos.y + 1 < 8 && board[init_pos.y + 1][init_pos.x] &&
+			GetPiece(board[init_pos.y + 1][init_pos.x]->bitpiece) == BPawn) {
+		SetVNveField(board[init_pos.y + 1][init_pos.x], 1);
 	}
 }
-	//TODO when piece is capture change all piece which were protecting captured
-	//piece to have the capturing piece in there attacking list and change attack_by
-	//list of capturing piece to have all these pieces
 
 const short MoveAlongX[] = { 1, 1, 0, -1, -1, -1, 0, 1 };
 const short MoveAlongY[] = { 0, 1, 1, 1, 0, -1, -1, -1 };
@@ -528,10 +589,8 @@ const short NightMoveAlongY[] = { 2, 1, -1, -2, -2, -1, 1, 2};
 //matrix to give Pos of bits in bitpiece from movement
 //this fuction assumes that piece has moved on board and its pos struct have its
 //current position
-//TODO when moving to dest_tile check in one direction if found a piece check in
-//opposite direction if found a piece then that two pieces must be in each others
-//list delete them
-void gen_list(board_t board, piece_t *piece) {
+void gen_list(chess_t *chess, board_t board, piece_t *piece) {
+	vprint1("chess -> %p, board -> %p, piece -> %p %c at (%c, %d)", chess, board, piece, piece->piece, Coordinate(piece));
 //TODO write pawn case
 	//to see in all 8 direction
 	int i = 0,
@@ -545,9 +604,52 @@ void gen_list(board_t board, piece_t *piece) {
 	//p denotes piece in direction of dirx and diry
 	//anotherpiece is piece in the direction of opposite to dirx and diry when
 	//piece was not inbetween
-	piece_t *p, *anotherpiece;
+	piece_t *p, *anotherpiece,
+			*captured_piece;
 	pos_t pos;
+	//if there is a captured element then delete this element from the list of all
+	//other piecelist which have it and insert that all other element into opposite
+	//list of piece
+	if(chess->captured_piece) {
+		//TODO when any piece is protecting someone it do not have fields set to
+		//go to that tile so either set them when inserting pieces in protecting
+		//list but as we check own capture first move will be still invalid
+		//or set field in this snipet
+		//loss of first method if we move the protected piece then
+		//as pawn cant move diagonaly - can be handled at line 392
+		//others can move but as they are sliding its fields is going to change
+		captured_piece = chess->captured_piece;
+		while(!isempty(&captured_piece->protecting)) {
+			print1("Inside protecting while loop of captured_piece case of gen_list");
+			p = (piece_t *)see(&captured_piece->protecting, 1);
+			delete_piece(&captured_piece->protecting, p);
+			delete_piece(&p->protected_by, captured_piece);
+		}
+		while(!isempty(&captured_piece->attacking)) {
+			print1("Inside attacking while loop of captured_piece case of gen_list");
+			p = (piece_t *)see(&captured_piece->attacking, 1);
+			delete_piece(&captured_piece->attacking, p);
+			delete_piece(&p->attack_by, captured_piece);
+		}
+		while(!isempty(&captured_piece->protected_by)) {
+			print1("Inside protected_by while loop of captured_piece case of gen_list");
+			p = (piece_t *)see(&captured_piece->protected_by, 1);
+			delete_piece(&captured_piece->protected_by, p);
+			delete_piece(&p->protecting, captured_piece);
+			insert_piece(&piece->attack_by, p);
+			insert_piece(&p->attacking, piece);
+		}
+		while(!isempty(&captured_piece->attack_by)) {
+			print1("Inside attack_by while loop of captured_piece case of gen_list");
+			p = (piece_t *)see(&captured_piece->attack_by, 1);
+			delete_piece(&captured_piece->attack_by, p);
+			delete_piece(&p->attacking, captured_piece);
+			insert_piece(&piece->protected_by, p);
+			insert_piece(&p->protecting, piece);
+		}
+	}
 	if(GetPiece(piece->bitpiece) == Night) {
+		print1("Inside piece is Night case of gen_list");
 		while(i < 8) {
 			if(piece->pos.y + NightMoveAlongY[i] < 8 && piece->pos.x + NightMoveAlongX[i] < 8 &&
 				piece->pos.y + NightMoveAlongY[i] >= 0 && piece->pos.x + NightMoveAlongX[i] >= 0) {
@@ -556,11 +658,13 @@ void gen_list(board_t board, piece_t *piece) {
 				if(p) {
 					//different color
 					if(COLOR(piece->bitpiece) ^ COLOR(p->bitpiece)) {
+						vprint1("Inside different color case (%c, %d)", piece->pos.x+NightMoveAlongX[i] + 'a', piece->pos.y + NightMoveAlongY[i]);
 						insert_piece(&piece->attacking, p);
 						insert_piece(&p->attack_by, piece);
 					}
 					//same color
 					else {
+						vprint1("Inside same color case (%c, %d)", piece->pos.x+NightMoveAlongX[i] + 'a', piece->pos.y + NightMoveAlongY[i]);
 						insert_piece(&piece->protecting, p);
 						insert_piece(&p->protected_by, piece);
 					}
@@ -571,6 +675,7 @@ void gen_list(board_t board, piece_t *piece) {
 	}
 	i = 0;
 	while(i < 8) {
+		print1("inside others is night case of gen_list");
 		if(piece->pos.y + NightMoveAlongY[i] < 8 && piece->pos.x + NightMoveAlongX[i] < 8 &&
 			piece->pos.y + NightMoveAlongY[i] >= 0 && piece->pos.x + NightMoveAlongX[i] >= 0) {
 			p = board[piece->pos.y + NightMoveAlongY[i]][piece->pos.x+NightMoveAlongX[i]];
@@ -594,17 +699,22 @@ void gen_list(board_t board, piece_t *piece) {
 	}
 	i = 0;
 	while(i < 8) {
+		print1("inside other piece case of gen_list");
 		dirx = MoveAlongX[i];
 		diry = MoveAlongY[i];
+		vprint1("along dir (%d, %d)", dirx, diry);
 		p = findpiece(board, piece->pos.x, piece->pos.y, dirx, diry, &ex, &ey);
 		if(!p) {
+			print1("no piece found");
 			setfield(board, piece, ex - piece->pos.x, ey - piece->pos.y);
 		}
 		else {
+			vprint1("%c at (%c, %d) found", p->piece, p->pos.x + 'a', p->pos.y);
 			anotherpiece = findpiece(board, piece->pos.x, piece->pos.y, -dirx,
 									-diry, &exofanotherpiece, &eyofanotherpiece);
 			//if anotherpiece exist
 			if(anotherpiece) {
+				vprint1("anotherpiece %c at (%c, %d) found", anotherpiece->piece, anotherpiece->pos.x + 'a', anotherpiece->pos.y);
 				//if p and anotherpiece are of different color
 				if(COLOR(p->bitpiece) ^ COLOR(anotherpiece->bitpiece)) {
 					if((num = search_piece(&p->attacking, anotherpiece)))
@@ -633,12 +743,14 @@ void gen_list(board_t board, piece_t *piece) {
 				//if piece can attack p
 				pos = setfield(board, piece, ex - piece->pos.x, ey - piece->pos.y);
 				if((pos.x != 0 || pos.y != 0) && board[piece->pos.y + pos.y][piece->pos.x + pos.x] && !search_piece(&piece->attacking, p)) {
+					vprint1("%c can attack %c", piece->piece, p->piece);
 					insert_piece(&piece->attacking, p);
 					insert_piece(&p->attack_by, piece);
 				}
 				//if p can attack piece
 				pos = setfield(board, p, piece->pos.x - ex, piece->pos.y - ey);
 				if((pos.x != 0 || pos.y != 0) && board[p->pos.y + pos.y][p->pos.x + pos.x] && !search_piece(&p->attacking, piece)) {
+					vprint1("%c can attack %c", p->piece, piece->piece);
 					insert_piece(&p->attacking, piece);
 					insert_piece(&piece->attack_by, p);
 				}
@@ -648,12 +760,14 @@ void gen_list(board_t board, piece_t *piece) {
 				//if piece can protect p
 				pos = setfield(board, piece, ex - piece->pos.x, ey - piece->pos.y);
 				if((pos.x != 0 || pos.y != 0) && board[piece->pos.y + pos.y][piece->pos.x + pos.x] && !search_piece(&piece->protecting, p)) {
+					vprint1("%c can protect %c", piece->piece, p->piece);
 					insert_piece(&piece->protecting, p);
 					insert_piece(&p->protected_by, piece);
 				}
 				//if p can protect piece
 				pos = setfield(board, p, piece->pos.x - ex, piece->pos.y - ey);
 				if((pos.x != 0 || pos.y != 0) && board[p->pos.y + pos.y][p->pos.x + pos.x] && !search_piece(&p->protecting, piece)) {
+					vprint1("%c can protect %c", p->piece, piece->piece);
 					insert_piece(&p->protecting, piece);
 					insert_piece(&piece->protected_by, p);
 				}
@@ -772,7 +886,7 @@ void init_piece(piece_t *piece, char p, pos_t pos) {
 	}
 	piece->piece = p;
 	piece->pos = pos;
-	vprint2("Initializing piecelist for %c", p);
+	vprint2("Initializing piecelist for %c at (%c, %d)", p, Coordinate(piece));
 	init_piece_list(&(piece->protected_by));
 	init_piece_list(&(piece->protecting));
 	init_piece_list(&(piece->attack_by));

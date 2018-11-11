@@ -147,6 +147,11 @@
 #define Night  BNight
 #define Bishop BBishop
 #define Queen  BQueen
+#define Coordinate(t) (t)->pos.x + 'a', (t)->pos.y
+extern const short MoveAlongX[];
+extern const short MoveAlongY[];
+extern const short NightMoveAlongX[];
+extern const short NightMoveAlongY[];
 //---- for piece list ----
 void init_piece_list(piece_list_t* l);
 void insert_piece(piece_list_t *l, piece_t *p);
@@ -155,11 +160,12 @@ piece_t *get_next(piece_list_t *l);
 void destroy_piece_list(piece_list_t *l);
 
 void init_piece_list(piece_list_t* l);
-void degen_list(board_t board, piece_t *piece);
-void gen_list(board_t board, piece_t *piece);
+void degen_list(chess_t *chess, board_t board, piece_t *piece);
+void gen_list(chess_t *chess, board_t board, piece_t *piece);
 //---- for piece list ----
 
 void print_all_list(piece_t *p);
 void init_piece(piece_t *piece, char p, pos_t pos);
 void printpieceinfo(piece_t *piece);
+piece_t *findpiece(board_t board, int sx, int sy, int dirx, int diry, int *dx, int *dy);
 #endif

@@ -5,7 +5,8 @@
 #include "../move/move.h"
 #include "../piece/piece.h"
 
-void init_board(board_t board);
+extern char char_board[8][8];
+void init_board(board_t board, char cha_board[][8]);
 
 
 #endif

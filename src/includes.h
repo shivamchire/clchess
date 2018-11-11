@@ -40,6 +40,9 @@ typedef struct chess {
 	uint8_t player;
 	board_t board;
 	move_t move;
+	piece_t *captured_piece;
+	piece_t *wking;
+	piece_t *bking;
 }chess_t;
 
 #endif

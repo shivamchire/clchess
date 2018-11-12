@@ -6,11 +6,10 @@
 #include <stdlib.h>
 #include "debug.h"
 #include "piece/list/slnl.h"
+#include "error/err.h"
 #define ABS(x) ((x) > 0 ? (x) : (-(x)))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
-#define WWIN 2
-#define BWIN 3
 //stores pos of board
 //x = cols
 //y = ranks

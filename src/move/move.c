@@ -134,7 +134,7 @@ int islegal(chess_t *chess, int tocheckmate) {
 		print3("You cant capture your own piece");
 		return EOWNCAP;
 	}
-//	if(GetPiece(src_piece->bitpiece) == King && (x == 2 || x == -3) && y == 0) {
+//	if(GetPiece(src_piece->bitpiece) == King && (x == 2 || x == -3) && (y == 0 || y == 7)) {
 //		if(GetCastling(src_piece->bitpiece) == 0) {
 //			print3("Castling not possible");
 //			return ECAST;

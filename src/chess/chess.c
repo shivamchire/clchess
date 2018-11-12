@@ -105,10 +105,10 @@ void update_chess(chess_t *chess) {
 	src_piece->pos = pos;
 //	if(GetPiece(src_piece->bitpiece) == King) {
 //		SetCastling(src_piece, 0);
-//		if((move.y2 - move.y1) == 2) {
+//		if((move.x2 - move.x1) == 2) {
 //			castling = 1;
 //		}
-//		else if((move.y2 - move.y1) == -3) {
+//		else if((move.x2 - move.x1) == -3) {
 //			castling = 2;
 //		}
 //	}
@@ -116,16 +116,16 @@ void update_chess(chess_t *chess) {
 	gen_list(chess, board, src_piece);
 //	if(castling == 1) {
 //		chess->move.x1 = 7;
-//		chess->move.y1 = 0;
+//		chess->move.y1 = src_piece->pos.y;
 //		chess->move.x2 = 5;
-//		chess->move.y2 = 0;
+//		chess->move.y2 = src_piece->pos.y;
 //		update_chess(chess);
 //	}
 //	else if(castling == 2) {
 //		chess->move.x1 = 0;
-//		chess->move.y1 = 0;
+//		chess->move.y1 = src_piece->pos.y;
 //		chess->move.x2 = 3;
-//		chess->move.y2 = 0;
+//		chess->move.y2 = src_piece->pos.y;
 //		update_chess(chess);
 //	}
 	//TODO destroy dest_piece

@@ -8,5 +8,7 @@
 #define EOWNCAP 4
 #define EWCOL 5
 #define ECAST 6
+#define WWIN 7
+#define BWIN 8
 
 #endif

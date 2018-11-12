@@ -158,6 +158,7 @@ extern const short NightMoveAlongX[];
 extern const short NightMoveAlongY[];
 //---- for piece list ----
 void init_piece_list(piece_list_t* l);
+void destroy_piece(piece_t *piece);
 void insert_piece(piece_list_t *l, piece_t *p);
 void delete_piece(piece_list_t *l, piece_t *piece);
 piece_t *get_next(piece_list_t *l);

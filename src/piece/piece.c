@@ -909,3 +909,9 @@ void init_piece(piece_t *piece, char p, pos_t pos) {
 	init_piece_list(&(piece->attack_by));
 	init_piece_list(&(piece->attacking));
 }
+void destroy_piece(piece_t *piece) {
+	destroy_piece_list(&piece->protected_by);
+	destroy_piece_list(&piece->protecting);
+	destroy_piece_list(&piece->attack_by);
+	destroy_piece_list(&piece->attacking);
+}

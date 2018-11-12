@@ -143,11 +143,14 @@ int islegal(chess_t *chess, int tocheckmate) {
 			chess_t chesscopy;
 			creatchesscopy(&chesscopy, chess);
 			if((ret = castlingpossible(&chesscopy))) {
-					return ret;
-			}
-			if(tocheckmate && (ret = ischeckmate(&chesscopy))) {
+				destroy_chess(&chesscopy);
 				return ret;
 			}
+			if(tocheckmate && (ret = ischeckmate(&chesscopy))) {
+				destroy_chess(&chesscopy);
+				return ret;
+			}
+			destroy_chess(&chesscopy);
 		}
 	}
 	else {
@@ -160,11 +163,14 @@ int islegal(chess_t *chess, int tocheckmate) {
 			creatchesscopy(&chesscopy, chess);
 			update_chess(&chesscopy);
 			if((ret = checkforcheck(&chesscopy))) {
-					return ret;
-			}
-			if(tocheckmate && (ret = ischeckmate(&chesscopy))) {
+				destroy_chess(&chesscopy);
 				return ret;
 			}
+			if(tocheckmate && (ret = ischeckmate(&chesscopy))) {
+				destroy_chess(&chesscopy);
+				return ret;
+			}
+			destroy_chess(&chesscopy);
 		}
 	}
 	return 0;

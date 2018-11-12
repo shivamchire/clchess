@@ -86,6 +86,20 @@ void init_chess(chess_t *chess, char chachessboard[][8]) {
 //	insert_piece(&(board[][]->protecting), board[][]);
 //	insert_piece(&(board[][]->protected_by), board[][]);
 }
+void destroy_chess(chess_t *chess) {
+	print3();
+	board_t board = chess->board;
+	int i, j;
+	for(i = 0; i < 8; i++) {
+		for(j = 0; j < 8; j++) {
+			if(board[i][j]) {
+				destroy_piece(board[i][j]);
+			}
+		}
+	}
+	destroy_piece_list(&chess->black);
+	destroy_piece_list(&chess->white);
+}
 /*
  * update chess according to move
  */

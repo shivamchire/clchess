@@ -90,7 +90,7 @@ void init_chess(chess_t *chess, char chachessboard[][8]) {
  * update chess according to move
  */
 void update_chess(chess_t *chess) {
-//	int castling = 0;
+	int castling = 0;
 	print2("Updating chess");
 	board_t board = chess->board;
 	move_t move = chess->move;
@@ -103,31 +103,34 @@ void update_chess(chess_t *chess) {
 	pos.x = move.x2;
 	pos.y = move.y2;
 	src_piece->pos = pos;
-//	if(GetPiece(src_piece->bitpiece) == King) {
-//		SetCastling(src_piece, 0);
-//		if((move.x2 - move.x1) == 2) {
-//			castling = 1;
-//		}
-//		else if((move.x2 - move.x1) == -3) {
-//			castling = 2;
-//		}
-//	}
+	if(GetPiece(src_piece->bitpiece) == Pawn) {
+		SetTwoMove(src_piece, 0);
+	}
+	else if(GetPiece(src_piece->bitpiece) == King) {
+		SetCastling(src_piece, 0);
+		if((move.x2 - move.x1) == 2) {
+			castling = 1;
+		}
+		else if((move.x2 - move.x1) == -2) {
+			castling = 2;
+		}
+	}
 	degen_list(chess, board, src_piece);
 	gen_list(chess, board, src_piece);
-//	if(castling == 1) {
-//		chess->move.x1 = 7;
-//		chess->move.y1 = src_piece->pos.y;
-//		chess->move.x2 = 5;
-//		chess->move.y2 = src_piece->pos.y;
-//		update_chess(chess);
-//	}
-//	else if(castling == 2) {
-//		chess->move.x1 = 0;
-//		chess->move.y1 = src_piece->pos.y;
-//		chess->move.x2 = 3;
-//		chess->move.y2 = src_piece->pos.y;
-//		update_chess(chess);
-//	}
+	if(castling == 1) {
+		chess->move.x1 = 7;
+		chess->move.y1 = src_piece->pos.y;
+		chess->move.x2 = 5;
+		chess->move.y2 = src_piece->pos.y;
+		update_chess(chess);
+	}
+	else if(castling == 2) {
+		chess->move.x1 = 0;
+		chess->move.y1 = src_piece->pos.y;
+		chess->move.x2 = 3;
+		chess->move.y2 = src_piece->pos.y;
+		update_chess(chess);
+	}
 	//TODO destroy dest_piece
 	print_all_list(src_piece);
 }
@@ -453,6 +456,43 @@ int ischeckmate(chess_t *chess) {
 		else {
 			print1("white king cant move");
 			return BWIN;
+		}
+	}
+	return 0;
+}
+int castlingpossible(chess_t *chess) {
+	move_t move = chess->move;
+	piece_t *piece;
+	if(chess->player == WHITE) {
+		piece = chess->wking;
+	}
+	else {
+		piece = chess->bking;
+	}
+	if((move.x2 - move.x1) == 2) {
+		chess->move.x2 = chess->move.x1 + 1;
+		update_chess(chess);
+		if(!isempty(&piece->attack_by)) {
+			return ECAST;
+		}
+		chess->move.x1 = chess->move.x2;
+		chess->move.x2 = chess->move.x1 + 1;
+		update_chess(chess);
+		if(!isempty(&piece->attack_by)) {
+			return ECAST;
+		}
+	}
+	if((move.x2 - move.x1) == -2) {
+		chess->move.x2 = chess->move.x1 - 1;
+		update_chess(chess);
+		if(!isempty(&piece->attack_by)) {
+			return ECAST;
+		}
+		chess->move.x1 = chess->move.x2;
+		chess->move.x2 = chess->move.x1 - 1;
+		update_chess(chess);
+		if(!isempty(&piece->attack_by)) {
+			return ECAST;
 		}
 	}
 	return 0;

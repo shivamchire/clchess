@@ -134,18 +134,23 @@ int islegal(chess_t *chess, int tocheckmate) {
 		print3("You cant capture your own piece");
 		return EOWNCAP;
 	}
-//	if(GetPiece(src_piece->bitpiece) == King && (x == 2 || x == -3) && (y == 0 || y == 7)) {
-//		if(GetCastling(src_piece->bitpiece) == 0) {
-//			print3("Castling not possible");
-//			return ECAST;
-//		}
-//		else {
-//			if((ret = castlingpossible(chess))) {
-//					return ret;
-//			}
-//		}
-//	}
-//	else {
+	if(GetPiece(src_piece->bitpiece) == King && (x == 2 || x == -2) && (y == 0 || y == 7)) {
+		if(GetCastling(src_piece->bitpiece) == 0) {
+			print3("Castling not possible");
+			return ECAST;
+		}
+		else {
+			chess_t chesscopy;
+			creatchesscopy(&chesscopy, chess);
+			if((ret = castlingpossible(&chesscopy))) {
+					return ret;
+			}
+			if(tocheckmate && (ret = ischeckmate(&chesscopy))) {
+				return ret;
+			}
+		}
+	}
+	else {
 		ret =  ptr(src_piece, x, y);
 		if(ret) {
 			return ret;
@@ -161,7 +166,7 @@ int islegal(chess_t *chess, int tocheckmate) {
 				return ret;
 			}
 		}
-//	}
+	}
 	return 0;
 }
 

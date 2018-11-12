@@ -83,10 +83,13 @@ pos_t setfield(board_t board, piece_t *piece, int x, int y) {
 	else if((PieceMsk & piece->bitpiece) == Pawn) {
 		if(!(COLOR(piece->bitpiece) ^ WHITE)) {
 			if(x == 0 && y > 0) {
-				if(y == 1 || GetTwoMove(piece->bitpiece) == 0) {
+				if(GetTwoMove(piece->bitpiece) == 0) {
 					if(!board[piece->pos.y + 1][piece->pos.x]) {
 						SetVPveField(piece, 1);
 						pos.y = 1;
+					}
+					else {
+						SetVPveField(piece, 0);
 					}
 				}
 				else {
@@ -98,6 +101,9 @@ pos_t setfield(board_t board, piece_t *piece, int x, int y) {
 						SetVPveField(piece, 1);
 						pos.y = 1;
 					}
+					else {
+						SetVPveField(piece, 0);
+					}
 				}
 			}
 			else if(ABS(x) == ABS(y)) {
@@ -108,6 +114,7 @@ pos_t setfield(board_t board, piece_t *piece, int x, int y) {
 				}
 				else if(x > 0 && y > 0 && board[piece->pos.y + 1][piece->pos.x + 1] &&
 						!(COLOR(board[piece->pos.y + 1][piece->pos.x + 1]->bitpiece) ^ WHITE)) {
+					SetDNEField(piece, 0);
 					pos.x = pos.y = 1;
 				}
 				else if(x < 0 && y > 0 && board[piece->pos.y + 1][piece->pos.x - 1] &&
@@ -118,7 +125,7 @@ pos_t setfield(board_t board, piece_t *piece, int x, int y) {
 				}
 				else if(x < 0 && y > 0 && board[piece->pos.y + 1][piece->pos.x - 1] &&
 						!(COLOR(board[piece->pos.y + 1][piece->pos.x - 1]->bitpiece) ^ WHITE)) {
-					//TODO this is not working e2e4 e7e5 g1f3
+					SetDNWField(piece, 0);
 					pos.x = -1;
 					pos.y = 1;
 				}
@@ -126,10 +133,13 @@ pos_t setfield(board_t board, piece_t *piece, int x, int y) {
 		}
 		else {
 			if(x == 0 && y < 0) {
-				if(y == -1 || GetTwoMove(piece->bitpiece) == 0) {
+				if(GetTwoMove(piece->bitpiece) == 0) {
 					if(!board[piece->pos.y - 1][piece->pos.x]) {
 						SetVNveField(piece, 1);
 						pos.y = -1;
+					}
+					else {
+						SetVNveField(piece, 0);
 					}
 				}
 				else {
@@ -141,6 +151,9 @@ pos_t setfield(board_t board, piece_t *piece, int x, int y) {
 						SetVNveField(piece, 1);
 						pos.y = -1;
 					}
+					else {
+						SetVNveField(piece, 0);
+					}
 				}
 			}
 			else if(ABS(x) == ABS(y)) {
@@ -151,6 +164,7 @@ pos_t setfield(board_t board, piece_t *piece, int x, int y) {
 				}
 				else if(x < 0 && y < 0 && board[piece->pos.y - 1][piece->pos.x - 1] &&
 						!(COLOR(board[piece->pos.y - 1][piece->pos.x - 1]->bitpiece) ^ BLACK)) {
+					SetDSWField(piece, 0);
 					pos.x = pos.y = -1;
 				}
 				else if(x > 0 && y < 0 && board[piece->pos.y - 1][piece->pos.x + 1] &&
@@ -161,10 +175,11 @@ pos_t setfield(board_t board, piece_t *piece, int x, int y) {
 				}
 				else if(x > 0 && y < 0 && board[piece->pos.y - 1][piece->pos.x + 1] &&
 						!(COLOR(board[piece->pos.y - 1][piece->pos.x + 1]->bitpiece) ^ BLACK)) {
-					SetDSEField(piece, 1);
+					SetDSEField(piece, 0);
 					pos.x = 1;
 					pos.y = -1;
 				}
+
 			}
 		}
 	}

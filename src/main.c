@@ -12,6 +12,7 @@ int main() {
 	twoplayer();
 }
 void twoplayer() {
+	int win;
 	print4("In twoplayer\n");
 	chess_t chess;
 	init_chess(&chess, char_board);
@@ -34,8 +35,16 @@ void twoplayer() {
 			printf("Invalid move\n");
 			continue;
 		}
-		if(islegal(&chess)) {
+		if((win = islegal(&chess, 1))) {
 			print4();
+			if(win == WWIN) {
+				printf("White win!\n");
+				return;
+			}
+			else if(win == BWIN) {
+				printf("Black win!\n");
+				return;
+			}
 			printf("Invalid move\n");
 			continue;
 		}

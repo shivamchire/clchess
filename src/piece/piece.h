@@ -5,7 +5,7 @@
 #include "../includes.h"
 /*
  *                  -ve  +ve  -ve  +ve  SW   SE   NE   NW
- * E xLPC TTTT TTTT VVVV VVVV HHHH HHHH DDDD DDDD DDDD DDDD xxxK/Q VHDC
+ * E xLPC TTTT TTTT VVVV VVVV HHHH HHHH DDDD DDDD DDDD DDDD xxCK/Q VHDC
  */
 #define WHITE (1)
 #define BLACK (0)
@@ -16,11 +16,13 @@
 #define HoriPos (2)
 #define VertPos (3)
 #define KQPos (4)
+#define CastlingPos (5)
 /* Bits */
 #define VertBit (1 << VertPos)
 #define HoriBit (1 << HoriPos)
 #define DiagBit (1 << DiagPos)
 #define KQBit (1 << KQPos)
+#define CastlingBit (1 << CastlingPos)
 /* Field Position */
 #define DiagFieldPos (8 )
 #define DiagNWPos (8)
@@ -49,7 +51,7 @@
 #define EnPassantPos (52)
 /*
  *                  -ve  +ve  -ve  +ve  SW   SE   NE   NW
- * E TLPC TTTT TTTT VVVV VVVV HHHH HHHH DDDD DDDD DDDD DDDD xxxK/Q VHDC
+ * E TLPC TTTT TTTT VVVV VVVV HHHH HHHH DDDD DDDD DDDD DDDD xxCK/Q VHDC
  */
 /* Field Mask */
 #define DiagMsk (0xffffUL << DiagFieldPos)
@@ -83,6 +85,7 @@
 #define SetD(x) ((x) |= DiagBit)
 #define SetK(x) ((x) |= VertBit | HoriBit | DiagBit | KQBit)
 /* Set Field */
+#define SetCastling(x, y) ((x)->bitpiece |= CastlingBit, (x)->bitpiece &= (((uint64_t)(y) << CastlingPos) | ~CastlingBit))
 #define SetVPveField(x, y) ((x)->bitpiece |= VertPveMsk, (x)->bitpiece &= (((uint64_t)(y) << VertFieldPvePos) | ~VertPveMsk))
 #define SetVNveField(x, y) ((x)->bitpiece |= VertNveMsk, (x)->bitpiece &= (((uint64_t)(y) << VertFieldNvePos) | ~VertNveMsk))
 #define SetHPveField(x, y) ((x)->bitpiece |= HoriPveMsk, (x)->bitpiece &= (((uint64_t)(y) << HoriFieldPvePos) | ~HoriPveMsk))
@@ -106,6 +109,7 @@
 #define GetV(x) (((x) & VertBit) >> VertPos)
 #define GetH(x) (((x) & HoriBit) >> HoriPos)
 #define GetD(x) (((x) & DiagBit) >> DiagPos)
+#define GetCastling(x) (((x) & CastlingBit) >> CastlingPos)
 /* Get Field */
 #define GetVPveField(x) (((x) & VertPveMsk) >> VertFieldPvePos)
 #define GetVNveField(x) (((x) & VertNveMsk) >> VertFieldNvePos)
@@ -134,14 +138,14 @@
 #define WNight (0x0 | WHITE)
 #define WBishop (DiagBit | WHITE)
 #define WQueen (VertBit | HoriBit | DiagBit | WHITE)
-#define WKing (VertBit | HoriBit | DiagBit | KQBit | WHITE)
+#define WKing (VertBit | HoriBit | DiagBit | CastlingBit | KQBit | WHITE)
 #define BPawn (VertBit | DiagBit)
 #define BRook (VertBit | HoriBit)
 #define BNight (0x0)
 #define BBishop (DiagBit)
 #define BQueen (VertBit | HoriBit | DiagBit)
-#define BKing (VertBit | HoriBit | DiagBit | KQBit)
-#define King BKing
+#define BKing (VertBit | HoriBit | DiagBit | CastlingBit | KQBit)
+#define King (VertBit | HoriBit | DiagBit | KQBit)
 #define Pawn   BPawn
 #define Rook   BRook
 #define Night  BNight

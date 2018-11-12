@@ -17,6 +17,8 @@ void init_chess(chess_t *chess, char chachessboard[][8]) {
 	chess->move.y1 = 0;
 	chess->move.y2 = 0;
 	init_board(chess->board, chachessboard);
+	init_piece_list(&chess->white);
+	init_piece_list(&chess->black);
 	for(i = 0; i < 8; i++) {
 		for(j = 0; j < 8; j++) {
 			if(board[i][j]) {
@@ -25,6 +27,12 @@ void init_chess(chess_t *chess, char chachessboard[][8]) {
 				}
 				else if(board[i][j]->piece == 'k') {
 					chess->bking = board[i][j];
+				}
+				if(COLOR(board[i][j]->bitpiece) ^ WHITE) {
+					insert_piece(&chess->black, board[i][j]);
+				}
+				else {
+					insert_piece(&chess->white, board[i][j]);
 				}
 				gen_list(chess, board, board[i][j]);
 				print_all_list(board[i][j]);
@@ -82,6 +90,7 @@ void init_chess(chess_t *chess, char chachessboard[][8]) {
  * update chess according to move
  */
 void update_chess(chess_t *chess) {
+//	int castling = 0;
 	print2("Updating chess");
 	board_t board = chess->board;
 	move_t move = chess->move;
@@ -94,12 +103,35 @@ void update_chess(chess_t *chess) {
 	pos.x = move.x2;
 	pos.y = move.y2;
 	src_piece->pos = pos;
+//	if(GetPiece(src_piece->bitpiece) == King) {
+//		SetCastling(src_piece, 0);
+//		if((move.y2 - move.y1) == 2) {
+//			castling = 1;
+//		}
+//		else if((move.y2 - move.y1) == -3) {
+//			castling = 2;
+//		}
+//	}
 	degen_list(chess, board, src_piece);
 	gen_list(chess, board, src_piece);
+//	if(castling == 1) {
+//		chess->move.x1 = 7;
+//		chess->move.y1 = 0;
+//		chess->move.x2 = 5;
+//		chess->move.y2 = 0;
+//		update_chess(chess);
+//	}
+//	else if(castling == 2) {
+//		chess->move.x1 = 0;
+//		chess->move.y1 = 0;
+//		chess->move.x2 = 3;
+//		chess->move.y2 = 0;
+//		update_chess(chess);
+//	}
 	//TODO destroy dest_piece
 	print_all_list(src_piece);
 }
-void convertchesstocharr(chess_t *chess, char chesscopycha[][8]) {
+void convertchesstochar(chess_t *chess, char chesscopycha[][8]) {
 	print1("creating copy of board");
 	board_t board = chess->board;
 	int i, j;
@@ -118,10 +150,16 @@ void convertchesstocharr(chess_t *chess, char chesscopycha[][8]) {
 void creatchesscopy(chess_t *chesscopy, chess_t *chess) {
 	print1("Creating chesscopy");
 	 char chesscopycha[8][8];
-	convertchesstocharr(chess, chesscopycha);
+	convertchesstochar(chess, chesscopycha);
 	init_chess(chesscopy, chesscopycha);
 	chesscopy->player = chess->player;
 	chesscopy->move = chess->move;
+	if(GetCastling(chess->wking->bitpiece) == 0) {
+		SetCastling(chesscopy->wking, 0);
+	}
+	if(GetCastling(chess->bking->bitpiece) == 0) {
+		SetCastling(chesscopy->bking, 0);
+	}
 }
 int checkforcheck(chess_t *chess) {
 	print1("checking for check");
@@ -192,5 +230,230 @@ int checkforcheck(chess_t *chess) {
 //		i++;
 //	}
 
+	return 0;
+}
+int ischeckmate(chess_t *chess) {
+	piece_t *piece;
+	board_t board = chess->board;
+	move_t move = chess->move;
+	if(chess->player == WHITE) {
+		print1("checking black king for checkmate");
+		piece = chess->bking;
+	}
+	else {
+		print1("checking white king for checkmate");
+		piece = chess->wking;
+	}
+	if(!isempty(&piece->attack_by)) {
+		print1("king under check");
+		if(GetVPveField(piece->bitpiece)) {
+			chess->move.x1 = piece->pos.x;
+			chess->move.y1 = piece->pos.y;
+			chess->move.x2 = piece->pos.x;
+			chess->move.y2 = piece->pos.y + 1;
+			if(!islegal(chess, 0)) {
+				update_chess(chess);
+				chess->move.x2 = chess->move.x1;
+				chess->move.y2 = chess->move.y1;
+				chess->move.x1 = chess->move.x1;
+				chess->move.y1 = chess->move.y1 + 1;
+				if(isempty(&piece->attack_by)) {
+					print1("vertical pve move possible");
+					update_chess(chess);
+					return 0;
+				}
+				update_chess(chess);
+			}
+			else {
+				chess->move.x2 = chess->move.x1;
+				chess->move.y2 = chess->move.y1;
+				chess->move.x1 = chess->move.x1;
+				chess->move.y1 = chess->move.y1 + 1;
+			}
+		}
+		if(GetVNveField(piece->bitpiece)) {
+			chess->move.x1 = piece->pos.x;
+			chess->move.y1 = piece->pos.y;
+			chess->move.x2 = piece->pos.x;
+			chess->move.y2 = piece->pos.y - 1;
+			if(!islegal(chess, 0)) {
+				update_chess(chess);
+				chess->move.x2 = chess->move.x1;
+				chess->move.y2 = chess->move.y1;
+				chess->move.x1 = chess->move.x1;
+				chess->move.y1 = chess->move.y1 - 1;
+				if(isempty(&piece->attack_by)) {
+					print1("vertical nve move possible");
+					update_chess(chess);
+					return 0;
+				}
+				update_chess(chess);
+			}
+			else {
+				chess->move.x2 = chess->move.x1;
+				chess->move.y2 = chess->move.y1;
+				chess->move.x1 = chess->move.x1;
+				chess->move.y1 = chess->move.y1 - 1;
+			}
+		}
+		if(GetHPveField(piece->bitpiece)) {
+			chess->move.x1 = piece->pos.x;
+			chess->move.y1 = piece->pos.y;
+			chess->move.x2 = piece->pos.x + 1;
+			chess->move.y2 = piece->pos.y;
+			if(!islegal(chess, 0)) {
+				update_chess(chess);
+				chess->move.x2 = chess->move.x1;
+				chess->move.y2 = chess->move.y1;
+				chess->move.x1 = chess->move.x1 + 1;
+				chess->move.y1 = chess->move.y1;
+				if(isempty(&piece->attack_by)) {
+					print1("horizontal pve move possible");
+					update_chess(chess);
+					return 0;
+				}
+				update_chess(chess);
+			}
+			else {
+				chess->move.x2 = chess->move.x1;
+				chess->move.y2 = chess->move.y1;
+				chess->move.x1 = chess->move.x1 + 1;
+				chess->move.y1 = chess->move.y1;
+			}
+		}
+		if(GetHNveField(piece->bitpiece)) {
+			chess->move.x1 = piece->pos.x;
+			chess->move.y1 = piece->pos.y;
+			chess->move.x2 = piece->pos.x - 1;
+			chess->move.y2 = piece->pos.y;
+			if(!islegal(chess, 0)) {
+				update_chess(chess);
+				chess->move.x2 = chess->move.x1;
+				chess->move.y2 = chess->move.y1;
+				chess->move.x1 = chess->move.x1 - 1;
+				chess->move.y1 = chess->move.y1;
+				if(isempty(&piece->attack_by)) {
+					print1("horizontal nve move possible");
+					update_chess(chess);
+					return 0;
+				}
+				update_chess(chess);
+			}
+			else {
+				chess->move.x2 = chess->move.x1;
+				chess->move.y2 = chess->move.y1;
+				chess->move.x1 = chess->move.x1 - 1;
+				chess->move.y1 = chess->move.y1;
+			}
+		}
+		if(GetDNWField(piece->bitpiece)) {
+			chess->move.x1 = piece->pos.x;
+			chess->move.y1 = piece->pos.y;
+			chess->move.x2 = piece->pos.x + 1;
+			chess->move.y2 = piece->pos.y + 1;
+			if(!islegal(chess, 0)) {
+				update_chess(chess);
+				chess->move.x2 = chess->move.x1;
+				chess->move.y2 = chess->move.y1;
+				chess->move.x1 = chess->move.x1 + 1;
+				chess->move.y1 = chess->move.y1 + 1;
+				if(isempty(&piece->attack_by)) {
+					print1("diag nw move possible");
+					update_chess(chess);
+					return 0;
+				}
+				update_chess(chess);
+			}
+			else {
+				chess->move.x2 = chess->move.x1;
+				chess->move.y2 = chess->move.y1;
+				chess->move.x1 = chess->move.x1 + 1;
+				chess->move.y1 = chess->move.y1 + 1;
+			}
+		}
+		if(GetDNEField(piece->bitpiece)) {
+			chess->move.x1 = piece->pos.x;
+			chess->move.y1 = piece->pos.y;
+			chess->move.x2 = piece->pos.x - 1;
+			chess->move.y2 = piece->pos.y + 1;
+			if(!islegal(chess, 0)) {
+				update_chess(chess);
+				chess->move.x2 = chess->move.x1;
+				chess->move.y2 = chess->move.y1;
+				chess->move.x1 = chess->move.x1 - 1;
+				chess->move.y1 = chess->move.y1 + 1;
+				if(isempty(&piece->attack_by)) {
+					print1("diag ne move possible");
+					update_chess(chess);
+					return 0;
+				}
+				update_chess(chess);
+			}
+			else {
+				chess->move.x2 = chess->move.x1;
+				chess->move.y2 = chess->move.y1;
+				chess->move.x1 = chess->move.x1 - 1;
+				chess->move.y1 = chess->move.y1 + 1;
+			}
+		}
+		if(GetDSWField(piece->bitpiece)) {
+			chess->move.x1 = piece->pos.x;
+			chess->move.y1 = piece->pos.y;
+			chess->move.x2 = piece->pos.x + 1;
+			chess->move.y2 = piece->pos.y - 1;
+			if(!islegal(chess, 0)) {
+				update_chess(chess);
+				chess->move.x2 = chess->move.x1;
+				chess->move.y2 = chess->move.y1;
+				chess->move.x1 = chess->move.x1 + 1;
+				chess->move.y1 = chess->move.y1 - 1;
+				if(isempty(&piece->attack_by)) {
+					print1("diag sw move possible");
+					update_chess(chess);
+					return 0;
+				}
+				update_chess(chess);
+			}
+			else {
+				chess->move.x2 = chess->move.x1;
+				chess->move.y2 = chess->move.y1;
+				chess->move.x1 = chess->move.x1 + 1;
+				chess->move.y1 = chess->move.y1 - 1;
+			}
+		}
+		if(GetDSEField(piece->bitpiece)) {
+			chess->move.x1 = piece->pos.x;
+			chess->move.y1 = piece->pos.y;
+			chess->move.x2 = piece->pos.x - 1;
+			chess->move.y2 = piece->pos.y - 1;
+			if(!islegal(chess, 0)) {
+				update_chess(chess);
+				chess->move.x2 = chess->move.x1;
+				chess->move.y2 = chess->move.y1;
+				chess->move.x1 = chess->move.x1 - 1;
+				chess->move.y1 = chess->move.y1 - 1;
+				if(isempty(&piece->attack_by)) {
+					print1("diag se move possible");
+					update_chess(chess);
+					return 0;
+				}
+				update_chess(chess);
+			}
+			else {
+				chess->move.x2 = chess->move.x1;
+				chess->move.y2 = chess->move.y1;
+				chess->move.x1 = chess->move.x1 - 1;
+				chess->move.y1 = chess->move.y1 - 1;
+			}
+		}
+		if(piece == chess->bking) {
+			print1("black king cant move");
+			return WWIN;
+		}
+		else {
+			print1("white king cant move");
+			return BWIN;
+		}
+	}
 	return 0;
 }

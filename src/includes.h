@@ -9,6 +9,8 @@
 #define ABS(x) ((x) > 0 ? (x) : (-(x)))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
+#define WWIN 2
+#define BWIN 3
 //stores pos of board
 //x = cols
 //y = ranks
@@ -43,6 +45,7 @@ typedef struct chess {
 	piece_t *captured_piece;
 	piece_t *wking;
 	piece_t *bking;
+	piece_list_t white, black;
 }chess_t;
 
 #endif

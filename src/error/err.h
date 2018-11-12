@@ -7,5 +7,6 @@
 #define EPIN 3
 #define EOWNCAP 4
 #define EWCOL 5
+#define ECAST 6
 
 #endif

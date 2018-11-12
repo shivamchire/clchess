@@ -112,7 +112,7 @@ int inbtw(board_t board, move_t move) {
 //TODO for any move after checking if that move is doable create a second chess
 //instance do that move in that chess instance and see if king is under check
 //TODO handle castling
-int islegal(chess_t *chess) {
+int islegal(chess_t *chess, int tocheckmate) {
 	board_t board = chess->board;
 	move_t move = chess->move;
 	piece_t *src_piece = board[move.y1][move.x1];
@@ -125,10 +125,6 @@ int islegal(chess_t *chess) {
 		print3("No piece at starting tile");
 		return ENOPIECE;
 	}
-	else if(GetPin(src_piece->bitpiece)) {
-		print3("Piece Pin\n");
-		return EPIN;
-	}
 	else if(COLOR(src_piece->bitpiece) ^ chess->player) {
 		print3("Play with your own piece");
 		return EWCOL;
@@ -138,17 +134,35 @@ int islegal(chess_t *chess) {
 		print3("You cant capture your own piece");
 		return EOWNCAP;
 	}
-	ret =  ptr(src_piece, x, y);
-	if(ret) {
-		return ret;
-	}
-	else {
-		chess_t chesscopy;
-		creatchesscopy(&chesscopy, chess);
-		update_chess(&chesscopy);
-		return checkforcheck(&chesscopy);
-
-	}
+//	if(GetPiece(src_piece->bitpiece) == King && (x == 2 || x == -3) && y == 0) {
+//		if(GetCastling(src_piece->bitpiece) == 0) {
+//			print3("Castling not possible");
+//			return ECAST;
+//		}
+//		else {
+//			if((ret = castlingpossible(chess))) {
+//					return ret;
+//			}
+//		}
+//	}
+//	else {
+		ret =  ptr(src_piece, x, y);
+		if(ret) {
+			return ret;
+		}
+		else {
+			chess_t chesscopy;
+			creatchesscopy(&chesscopy, chess);
+			update_chess(&chesscopy);
+			if((ret = checkforcheck(&chesscopy))) {
+					return ret;
+			}
+			if(tocheckmate && (ret = ischeckmate(&chesscopy))) {
+				return ret;
+			}
+		}
+//	}
+	return 0;
 }
 
 bool pvevertical(piece_t *piece, int x, int y) {

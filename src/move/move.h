@@ -14,7 +14,7 @@
 int inbtw(board_t board, move_t move);
 move_t conv_str_move(char *move);
 extern bool (*move_mat[15][15])(piece_t *piece, int x, int y);
-int islegal(chess_t *chess);
+int islegal(chess_t *chess, int tocheckmate);
 bool pvevertical(piece_t *piece, int x, int y);
 bool nvevertical(piece_t *piece, int x, int y);
 bool pvehorizontal(piece_t *piece, int x, int y);

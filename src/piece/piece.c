@@ -533,34 +533,36 @@ void degen_list(chess_t *chess, board_t board, piece_t *piece) {
 				if(diry)
 					diry = diry / ABS(diry);
 				anotherpiece = findpiece(board, p->pos.x, p->pos.y, dirx, diry, &(pos.x), &(pos.y));
-				//if anotherpiece dont exist just update the appropriate field
-				if(!anotherpiece) {
-					print1("anotherpiece not found");
-					setfield(board, p, pos.x - p->pos.x, pos.y - p->pos.y);
-				}
-				//else
-				else {
-					print1("anotherpiece found");
-					//if both the pieces are of different color add anotherpiece
-					//to attacking list of p and add p to attack_by list of anotherpiece
-					//and set appropriate field of p to x or y
-					if(COLOR(anotherpiece->bitpiece) ^ COLOR(p->bitpiece)) {
-						pos = setfield(board, p, anotherpiece->pos.x - p->pos.x, anotherpiece->pos.y - p->pos.y);
-						if((pos.x != 0 || pos.y != 0) && board[p->pos.y + pos.y][p->pos.x + pos.x]) {
-							vprint1("%c can attack %c at (%c, %d)", p->piece, anotherpiece->piece, Coordinate(anotherpiece));
-							insert_piece(&p->attacking, anotherpiece);
-							insert_piece(&anotherpiece->attack_by, p);
-						}
+				if(anotherpiece != piece) {
+					//if anotherpiece dont exist just update the appropriate field
+					if(!anotherpiece) {
+						print1("anotherpiece not found");
+						setfield(board, p, pos.x - p->pos.x, pos.y - p->pos.y);
 					}
-					//else if of same color add anotherpiece in protecting list of
-					//p and add p in protected_by list of anotherpiece
-					//and set appropriate field of p to x-1 or y-1
+					//else
 					else {
-						pos = setfield(board, p, (anotherpiece->pos.x - p->pos.x) - 1, (anotherpiece->pos.y - p->pos.y) - 1);
-						if((pos.x != 0 || pos.y != 0) && board[p->pos.y + pos.y][p->pos.x + pos.x]) {
-							vprint1("%c can protect %c at (%c , %d)", p->piece, anotherpiece->piece, Coordinate(anotherpiece));
-							insert_piece(&p->protecting, anotherpiece);
-							insert_piece(&anotherpiece->protected_by, p);
+						print1("anotherpiece found");
+						//if both the pieces are of different color add anotherpiece
+						//to attacking list of p and add p to attack_by list of anotherpiece
+						//and set appropriate field of p to x or y
+						if(COLOR(anotherpiece->bitpiece) ^ COLOR(p->bitpiece)) {
+							pos = setfield(board, p, anotherpiece->pos.x - p->pos.x, anotherpiece->pos.y - p->pos.y);
+							if((pos.x != 0 || pos.y != 0) && board[p->pos.y + pos.y][p->pos.x + pos.x]) {
+								vprint1("%c can attack %c at (%c, %d)", p->piece, anotherpiece->piece, Coordinate(anotherpiece));
+								insert_piece(&p->attacking, anotherpiece);
+								insert_piece(&anotherpiece->attack_by, p);
+							}
+						}
+						//else if of same color add anotherpiece in protecting list of
+						//p and add p in protected_by list of anotherpiece
+						//and set appropriate field of p to x-1 or y-1
+						else {
+							pos = setfield(board, p, (anotherpiece->pos.x - p->pos.x) - 1, (anotherpiece->pos.y - p->pos.y) - 1);
+							if((pos.x != 0 || pos.y != 0) && board[p->pos.y + pos.y][p->pos.x + pos.x]) {
+								vprint1("%c can protect %c at (%c , %d)", p->piece, anotherpiece->piece, Coordinate(anotherpiece));
+								insert_piece(&p->protecting, anotherpiece);
+								insert_piece(&anotherpiece->protected_by, p);
+							}
 						}
 					}
 				}

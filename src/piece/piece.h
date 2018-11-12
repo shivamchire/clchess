@@ -167,6 +167,7 @@ void destroy_piece_list(piece_list_t *l);
 void init_piece_list(piece_list_t* l);
 void degen_list(chess_t *chess, board_t board, piece_t *piece);
 void gen_list(chess_t *chess, board_t board, piece_t *piece);
+int getnumofelem(piece_list_t *l);
 //---- for piece list ----
 
 void print_all_list(piece_t *p);

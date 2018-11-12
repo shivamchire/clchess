@@ -2,6 +2,7 @@
 #include "../piece/piece.h"
 #include "../error/err.h"
 #include "../chess/chess.h"
+#include "../ui/ui.h"
 bool (*move_mat[15][15])(piece_t *piece, int x, int y) = {
 	{ swdiag, invalid, invalid, invalid, invalid, invalid, invalid, nvevertical, invalid, invalid, invalid, invalid, invalid, invalid, sediag },
 	{ invalid, swdiag, invalid, invalid, invalid, invalid, invalid, nvevertical, invalid, invalid, invalid, invalid, invalid, sediag, invalid },
@@ -174,6 +175,124 @@ int islegal(chess_t *chess, int tocheckmate) {
 		}
 	}
 	return 0;
+}
+void generaterandommove(chess_t *chess, int player) {
+
+	print1();
+	int x = 0, y = 0, num, n;
+	piece_list_t *l;
+	piece_t *piece;
+	if(player == WHITE) {
+		print1("white player selected");
+		l = &chess->white;
+	}
+	else {
+		print1("black player selected");
+		l = &chess->black;
+	}
+	while(1) {
+		while(1) {
+			vprint1("player change to %d", player);
+			chess->player = player;
+			num = getnumofelem(l);
+			n = rand() % num;
+			if(n == 0) {
+				n = 1;
+			}
+			piece = (piece_t *)see(l, n);
+			if(GetV(piece->bitpiece)) {
+				if((y = GetVPveField(piece->bitpiece))) {
+					break;
+				}
+				else if((y = -GetVNveField(piece->bitpiece))) {
+					break;
+				}
+			}
+			if(GetH(piece->bitpiece)) {
+				if((x = GetHPveField(piece->bitpiece))) {
+					break;
+				}
+				else if((x = -GetHNveField(piece->bitpiece))) {
+					break;
+				}
+			}
+			if(GetD(piece->bitpiece)) {
+				if(GetDNEField(piece->bitpiece)) {
+					y = 1;
+					x = -1;
+					break;
+				}
+				else if(GetDNWField(piece->bitpiece)) {
+					y = 1;
+					x = 1;
+					break;
+				}
+				else if(GetDSWField(piece->bitpiece)) {
+					y = -1;
+					x = 1;
+					break;
+				}
+				else if(GetDSEField(piece->bitpiece)) {
+					y = -1;
+					x = -1;
+					break;
+				}
+			}
+			if(GetPiece(piece->bitpiece) == Night) {
+				if(GetNightSE(piece->bitpiece)) {
+					x = 1;
+					y = -2;
+					break;
+				}
+				else if(GetNightSW(piece->bitpiece)) {
+					x = -1;
+					y = -2;
+					break;
+				}
+				else if(GetNightWS(piece->bitpiece)) {
+					x = -2;
+					y = -1;
+					break;
+				}
+				else if(GetNightES(piece->bitpiece)) {
+					x = 2;
+					y = -1;
+					break;
+				}
+				else if(GetNightNW(piece->bitpiece)) {
+					x = -1;
+					y = 2;
+					break;
+				}
+				else if(GetNightNE(piece->bitpiece)) {
+					x = 1;
+					y = 2;
+					break;
+				}
+				else if(GetNightWN(piece->bitpiece)) {
+					x = -2;
+					y = 1;
+					break;
+				}
+				else if(GetNightEN(piece->bitpiece)) {
+					x = 2;
+					y = 1;
+					break;
+				}
+			}
+		}
+		chess->move.x1 = piece->pos.x;
+		chess->move.x2 = piece->pos.x + x;
+		chess->move.y1 = piece->pos.y;
+		chess->move.y2 = piece->pos.y + y;
+		if(!islegal(chess, 0)) {
+			break;
+		}
+	}
+	update_chess(chess);
+	chess->player = player ^ COLOR_Msk;
+	vprint1("%c at (%c, %d) can move to (%c, %d)", piece->piece, chess->move.x1 + 'a', chess->move.y1, chess->move.x2 + 'a', chess->move.y2);
+	print_board(chess->board);
 }
 
 bool pvevertical(piece_t *piece, int x, int y) {

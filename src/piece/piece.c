@@ -70,6 +70,10 @@ pos_t setfield(board_t board, piece_t *piece, int x, int y) {
 				shift = NightBitsPos[2 + y][2 + x];
 				piece->bitpiece |= 1UL << shift;
 			}
+			else {
+				shift = NightBitsPos[2 + y][2 + x];
+				piece->bitpiece |= 0UL << shift;
+			}
 			//setting pos even if night cant legaly go to tile where same color piece
 			//lies beacuse night can protect it and hence should be added to protect
 			//list
@@ -226,6 +230,30 @@ pos_t setfield(board_t board, piece_t *piece, int x, int y) {
 			}
 			//same color
 			else {
+				if(dirx == 1 && diry == 0) {
+					SetHPveField(piece, 0);
+				}
+				else if(dirx == 1 && diry == 1) {
+					SetDNEField(piece, 0);
+				}
+				else if(dirx == 0 && diry == 1) {
+					SetVPveField(piece, 0);
+				}
+				else if(dirx == -1 && diry == 1) {
+					SetDNWField(piece, 0);
+				}
+				else if(dirx == -1 && diry == 0) {
+					SetHNveField(piece, 0);
+				}
+				else if(dirx == -1 && diry == -1) {
+					SetDSWField(piece, 0);
+				}
+				else if(dirx == 0 && diry == -1) {
+					SetVNveField(piece, 0);
+				}
+				else if(dirx == 1 && diry == -1) {
+					SetDSEField(piece, 0);
+				}
 				pos.x = dirx;
 				pos.y = diry;
 				return pos;

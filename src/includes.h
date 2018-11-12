@@ -1,6 +1,7 @@
 #ifndef INCLUDES_H
 #define INCLUDES_H
 
+//player[if oneplayer mode]chessboard
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -48,4 +49,5 @@ typedef struct chess {
 }chess_t;
 
 void twoplayer(chess_t *chess, char c_board[][8], int player);
+void oneplayer(chess_t *chess, char c_board[][8], int player, int mode);
 #endif

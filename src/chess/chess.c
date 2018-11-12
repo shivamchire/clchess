@@ -113,6 +113,14 @@ void update_chess(chess_t *chess) {
 	chess->captured_piece = board[move.y2][move.x2];
 	board[move.y2][move.x2] = board[move.y1][move.x1];
 	board[move.y1][move.x1] = NULL;
+	if(chess->captured_piece) {
+		if(COLOR(chess->captured_piece->bitpiece) == WHITE) {
+			delete_piece(&chess->white, chess->captured_piece);
+		}
+		else {
+			delete_piece(&chess->black, chess->captured_piece);
+		}
+	}
 	pos_t pos;
 	pos.x = move.x2;
 	pos.y = move.y2;
@@ -261,6 +269,7 @@ int ischeckmate(chess_t *chess) {
 		print1("checking white king for checkmate");
 		piece = chess->wking;
 	}
+	chess->player ^= COLOR_Msk;
 	if(!isempty(&piece->attack_by)) {
 		print1("king under check");
 		if(GetVPveField(piece->bitpiece)) {

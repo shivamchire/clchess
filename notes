@@ -117,5 +117,5 @@ Moves
 	Remaning 010, 011, 100
 Things remaning
 	pawn promotion
-	save and load
 	deleting
+	checking checkmate king can attack, other piece can block

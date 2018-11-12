@@ -1,4 +1,8 @@
-# clchess
+clchess
+
+Shivam Hire
+
+111208023
 
 The aim of this project is to built a command line chess(clchess) having following features:
 
@@ -7,3 +11,5 @@ The aim of this project is to built a command line chess(clchess) having followi
 2)To save game at any point of time and resume it
 
 3)Have 1 player and 2 player mode
+
+4)1 player mode do random move

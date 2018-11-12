@@ -211,5 +211,6 @@ void oneplayer(chess_t *chess, char c_board[][8], int player, int mode) {
 		}
 	}
 	else if(mode == 2) {
+		printf("Hard mode not implemented\n");
 	}
 }

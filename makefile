@@ -1,7 +1,7 @@
 DEBUG_FLAG = 0
 
-main: src/main.c board.o move.o piece.o slnl.o ui.o chess.o
-	gcc -DDEBUG=$(DEBUG_FLAG) src/main.c build/board.o build/move.o build/piece.o build/slnl.o build/ui.o build/chess.o -o main
+project: src/main.c board.o move.o piece.o slnl.o ui.o chess.o
+	gcc -DDEBUG=$(DEBUG_FLAG) src/main.c build/board.o build/move.o build/piece.o build/slnl.o build/ui.o build/chess.o -o project
 board.o: src/board/board.h src/board/board.c
 	gcc -DDEBUG=$(DEBUG_FLAG) -c src/board/board.c -o build/board.o
 move.o: src/move/move.h src/move/move.c

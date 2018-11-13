@@ -258,7 +258,8 @@ int checkforcheck(chess_t *chess) {
 	return 0;
 }
 int ischeckmate(chess_t *chess) {
-	piece_t *piece;
+	piece_t *piece, *p, *anotherpiece;
+	int x, y, dx, dy, dirx, diry, x1, y1, i = 0, x2, y2;
 	board_t board = chess->board;
 	move_t move = chess->move;
 	if(chess->player == WHITE) {
@@ -470,6 +471,75 @@ int ischeckmate(chess_t *chess) {
 				chess->move.y2 = chess->move.y1;
 				chess->move.x1 = chess->move.x1 - 1;
 				chess->move.y1 = chess->move.y1 - 1;
+			}
+		}
+		p = (piece_t *)see(&piece->attack_by, 1);
+		if(!isempty(&p->attack_by)) {
+			anotherpiece = (piece_t *)see(&p->attack_by, 1);
+			chess->move.x1 = anotherpiece->pos.x;
+			chess->move.y1 = anotherpiece->pos.y;
+			chess->move.x2 = p->pos.x;
+			chess->move.y2 = p->pos.y;
+			if(!islegal(chess, 0)) {
+				update_chess(chess);
+				return 0;
+			}
+			chess->move.x1 = move.x1;
+			chess->move.x2 = move.x2;
+			chess->move.y1 = move.y1;
+			chess->move.y2 = move.y2;
+		}
+		x = p->pos.x - piece->pos.x;
+		y = p->pos.y - piece->pos.y;
+		if(x)
+			dirx = x / ABS(x);
+		if(y)
+			diry = y / ABS(y);
+		if((ABS(x) == 2 && ABS(y) == 1) || (ABS(x) == 1 && ABS(y) == 2)) {
+		}
+		else {
+			for(x1 = dirx, y1 = diry; x1 < x && y1 < y; x1 += dirx, y1 +=diry) {
+				i = 0;
+				while(i < 8) {
+					anotherpiece = findpiece(board, piece->pos.x + x1, piece->pos.y + y1, MoveAlongX[i], MoveAlongY[i], &dx, &dy);
+					if(!anotherpiece) {
+						continue;
+					}
+					chess->move.x1 = anotherpiece->pos.x;
+					chess->move.y1 = anotherpiece->pos.y;
+					chess->move.x2 = x1 + piece->pos.x;
+					chess->move.y2 = y1 + piece->pos.y;
+					if(!islegal(chess, 0)) {
+						update_chess(chess);
+						return 0;
+					}
+					chess->move.x1 = move.x1;
+					chess->move.x2 = move.x2;
+					chess->move.y1 = move.y1;
+					chess->move.y2 = move.y2;
+					i++;
+				}
+				i = 0;
+				while(i < 8) {
+					x2 = NightMoveAlongX[i];
+					y2 = NightMoveAlongY[i];
+					if((GetPiece(board[piece->pos.x + x1 + x2][piece->pos.y + y1 + y2]->bitpiece) == Night) &&
+							!(COLOR(piece->bitpiece) ^ COLOR(board[piece->pos.x + x1 + x2][piece->pos.y + y1 + y2]->bitpiece))) {
+						chess->move.x1 = piece->pos.x + x1 + x2;
+						chess->move.y1 = piece->pos.y + y1 + y2;
+						chess->move.x2 = piece->pos.x + x1;
+						chess->move.y2 = piece->pos.y + y1;
+						if(!islegal(chess, 0)) {
+							update_chess(chess);
+							return 0;
+						}
+						chess->move.x1 = move.x1;
+						chess->move.x2 = move.x2;
+						chess->move.y1 = move.y1;
+						chess->move.y2 = move.y2;
+					}
+					i++;
+				}
 			}
 		}
 		if(piece == chess->bking) {

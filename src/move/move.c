@@ -179,7 +179,7 @@ int islegal(chess_t *chess, int tocheckmate) {
 void generaterandommove(chess_t *chess, int player) {
 
 	print1();
-	int x = 0, y = 0, num, n;
+	int x = 0, y = 0, num, n, dirx, diry, randdir;
 	piece_list_t *l;
 	piece_t *piece;
 	if(player == WHITE) {
@@ -200,84 +200,127 @@ void generaterandommove(chess_t *chess, int player) {
 				n = 1;
 			}
 			piece = (piece_t *)see(l, n);
-			if(GetV(piece->bitpiece)) {
-				if((y = GetVPveField(piece->bitpiece))) {
-					break;
-				}
-				else if((y = -GetVNveField(piece->bitpiece))) {
-					break;
-				}
-			}
-			if(GetH(piece->bitpiece)) {
-				if((x = GetHPveField(piece->bitpiece))) {
-					break;
-				}
-				else if((x = -GetHNveField(piece->bitpiece))) {
-					break;
-				}
-			}
-			if(GetD(piece->bitpiece)) {
-				if(GetDNEField(piece->bitpiece)) {
-					y = 1;
-					x = -1;
-					break;
-				}
-				else if(GetDNWField(piece->bitpiece)) {
-					y = 1;
-					x = 1;
-					break;
-				}
-				else if(GetDSWField(piece->bitpiece)) {
-					y = -1;
-					x = 1;
-					break;
-				}
-				else if(GetDSEField(piece->bitpiece)) {
-					y = -1;
-					x = -1;
-					break;
+			randdir = rand() % 8;
+			dirx = MoveAlongX[randdir];
+			diry = MoveAlongY[randdir];
+			if(dirx == 0) {
+				if(GetV(piece->bitpiece)) {
+					if(diry > 0) {
+						if((y = GetVPveField(piece->bitpiece))) {
+							break;
+						}
+					}
+					else {
+						if((y = -GetVNveField(piece->bitpiece))) {
+							break;
+						}
+					}
 				}
 			}
+			else if(diry == 0) {
+				if(GetH(piece->bitpiece)) {
+					if(dirx > 0) {
+						if((x = GetHPveField(piece->bitpiece))) {
+							break;
+						}
+					}
+					else {
+						 if((x = -GetHNveField(piece->bitpiece))) {
+							break;
+						}
+					}
+				}
+			}
+			else if(ABS(diry) == ABS(dirx)) {
+				if(GetD(piece->bitpiece)) {
+					if(dirx == 1 && diry == 1) {
+						if(GetDNEField(piece->bitpiece)) {
+							y = 1;
+							x = -1;
+							break;
+						}
+					}
+					else if(dirx == -1 && diry == 1) {
+						if(GetDNWField(piece->bitpiece)) {
+							y = 1;
+							x = 1;
+							break;
+						}
+					}
+					else if(dirx == -1 && diry == -1) {
+						if(GetDSWField(piece->bitpiece)) {
+							y = -1;
+							x = 1;
+							break;
+						}
+					}
+					else if(dirx == 1 && diry == -1) {
+						if(GetDSEField(piece->bitpiece)) {
+							y = -1;
+							x = -1;
+							break;
+						}
+					}
+				}
+			}
+			dirx = NightMoveAlongX[randdir];
+			diry = NightMoveAlongY[randdir];
 			if(GetPiece(piece->bitpiece) == Night) {
-				if(GetNightSE(piece->bitpiece)) {
-					x = 1;
-					y = -2;
-					break;
+				if(dirx == 1 && diry == -2) {
+					if(GetNightSE(piece->bitpiece)) {
+						x = 1;
+						y = -2;
+						break;
+					}
 				}
-				else if(GetNightSW(piece->bitpiece)) {
-					x = -1;
-					y = -2;
-					break;
+				if(dirx == -1 && diry == -2) {
+					if(GetNightSW(piece->bitpiece)) {
+						x = -1;
+						y = -2;
+						break;
+					}
 				}
-				else if(GetNightWS(piece->bitpiece)) {
-					x = -2;
-					y = -1;
-					break;
+				if(dirx == -2 && diry == -1) {
+					if(GetNightWS(piece->bitpiece)) {
+						x = -2;
+						y = -1;
+						break;
+					}
 				}
-				else if(GetNightES(piece->bitpiece)) {
-					x = 2;
-					y = -1;
-					break;
+				if(dirx == 2 && diry == -1) {
+					if(GetNightES(piece->bitpiece)) {
+						x = 2;
+						y = -1;
+						break;
+					}
 				}
-				else if(GetNightNW(piece->bitpiece)) {
-					x = -1;
-					y = 2;
-					break;
+				if(dirx == -1 && diry == 2) {
+					if(GetNightNW(piece->bitpiece)) {
+						x = -1;
+						y = 2;
+						break;
+					}
 				}
-				else if(GetNightNE(piece->bitpiece)) {
-					x = 1;
-					y = 2;
-					break;
+				if(dirx == 1 && diry == 2) {
+					if(GetNightNE(piece->bitpiece)) {
+						x = 1;
+						y = 2;
+						break;
+					}
 				}
-				else if(GetNightWN(piece->bitpiece)) {
-					x = -2;
-					y = 1;
-					break;
+				if(dirx == -2 && diry == 1) {
+					if(GetNightWN(piece->bitpiece)) {
+						x = -2;
+						y = 1;
+						break;
+					}
 				}
-				else if(GetNightEN(piece->bitpiece)) {
-					x = 2;
-					y = 1;
-					break;
+				if(dirx == 2 && diry == 1) {
+					if(GetNightEN(piece->bitpiece)) {
+						x = 2;
+						y = 1;
+						break;
+					}
 				}
 			}
 		}
@@ -285,6 +328,10 @@ void generaterandommove(chess_t *chess, int player) {
 		chess->move.x2 = piece->pos.x + x;
 		chess->move.y1 = piece->pos.y;
 		chess->move.y2 = piece->pos.y + y;
+		if(!(chess->move.x2 >= 0 && chess->move.x2 < 8 && chess->move.y2 >= 0 && chess->move.y2 < 8)) {
+			continue;
+		}
+		vprint1("%c at (%c, %d) can illegaly move to (%c, %d)", piece->piece, chess->move.x1 + 'a', chess->move.y1, chess->move.x2 + 'a', chess->move.y2);
 		if(!islegal(chess, 0)) {
 			break;
 		}

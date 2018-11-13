@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
+#include <errno.h>
 #include "includes.h"
 #include "board/board.h"
 #include "ui/ui.h"
@@ -28,6 +29,10 @@ int main() {
 			char cha_board[8][8];
 			scanf("%s", load_file_name);
 			FILE *load_file = fopen(load_file_name, "r");
+			if(!load_file) {
+				perror("");
+				return errno;
+			}
 			fscanf(load_file, "%d", &playermode);
 			if(playermode == 1) {
 				fscanf(load_file, "%d", &oneplayermode);
@@ -102,6 +107,7 @@ void twoplayer(chess_t *chess, char c_board[][8], int player) {
 			FILE *save_file = fopen(&move[1], "w");
 			char cha_board[8][8];
 			fprintf(save_file, "%d", 2);
+			fprintf(save_file, "%c", ' ');
 			fprintf(save_file, "%d", chess->player);
 			convertchesstochar(chess, cha_board);
 			for(i = 0; i < 8; i++) {
@@ -167,10 +173,16 @@ void oneplayer(chess_t *chess, char c_board[][8], int player, int mode) {
 				scanf("%s", &move[1]);
 				printf("%s\n", &move[1]);
 				FILE *save_file = fopen(&move[1], "w");
+				if(!save_file) {
+					perror("");
+					continue;
+				}
 				char cha_board[8][8];
-				fprintf(save_file, "%d", 2);
-				fprintf(save_file, "%d", chess->player);
+				fprintf(save_file, "%d", 1);
+				fprintf(save_file, "%c", ' ');
 				fprintf(save_file, "%d", mode);
+				fprintf(save_file, "%c", ' ');
+				fprintf(save_file, "%d", chess->player);
 				convertchesstochar(chess, cha_board);
 				for(i = 0; i < 8; i++) {
 					for(j = 0; j < 8; j++) {

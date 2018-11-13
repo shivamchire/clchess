@@ -45,7 +45,7 @@ typedef struct chess {
 	piece_t *captured_piece;
 	piece_t *wking;
 	piece_t *bking;
-	piece_list_t white, black;
+	piece_list_t white, black, legalmoves;
 }chess_t;
 
 void twoplayer(chess_t *chess, char c_board[][8], int player);

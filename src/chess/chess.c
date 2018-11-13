@@ -19,6 +19,7 @@ void init_chess(chess_t *chess, char chachessboard[][8]) {
 	init_board(chess->board, chachessboard);
 	init_piece_list(&chess->white);
 	init_piece_list(&chess->black);
+	init_piece_list(&chess->legalmoves);
 	for(i = 0; i < 8; i++) {
 		for(j = 0; j < 8; j++) {
 			if(board[i][j]) {

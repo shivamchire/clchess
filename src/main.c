@@ -18,6 +18,7 @@ int main() {
 	chess_t chess;
 	int mode, player, i, j, playermode, oneplayermode;
 	while(1) {
+		eprint("dskafjk");
 		printf("1. To open save game\n");
 		printf("2. To start a new two player game\n");
 		printf("3. To start a new one player game\n");
